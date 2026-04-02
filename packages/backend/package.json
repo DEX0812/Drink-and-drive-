@@ -1,0 +1,26 @@
+{
+  "name": "@platform/backend",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "express": "*",
+    "socket.io": "*",
+    "cors": "*",
+    "dotenv": "*",
+    "jsonwebtoken": "*",
+    "bcryptjs": "*",
+    "stripe": "*",
+    "prisma": "6.2.1",
+    "@prisma/client": "6.2.1"
+  },
+  "devDependencies": {
+    "ts-node-dev": "*",
+    "typescript": "*"
+  }
+}

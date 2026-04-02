@@ -1,0 +1,19 @@
+{
+  "name": "@platform/db",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "migrate:dev": "prisma migrate dev",
+    "generate": "prisma generate",
+    "studio": "prisma studio",
+    "seed": "prisma db seed"
+  },
+  "devDependencies": {
+    "prisma": "6.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  }
+}

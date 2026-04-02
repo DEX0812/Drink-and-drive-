@@ -1,0 +1,19 @@
+{
+  "name": "@platform/shared",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "axios": "*",
+    "expo-secure-store": "*",
+    "react": "*",
+    "react-native": "*",
+    "socket.io-client": "*"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "drink-and-drive-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "backend:dev": "npm run dev --workspace=@platform/backend",
+    "db:migrate": "npm run migrate:dev --workspace=@platform/db",
+    "rider:dev": "npm run dev --workspace=@platform/rider",
+    "driver:dev": "npm run dev --workspace=@platform/driver",
+    "admin:dev": "npm run dev --workspace=@platform/admin"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.17.10",
+    "@types/socket.io": "^3.0.1",
+    "next": "15.1.0",
+    "prisma": "6.2.1",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.7.3"
+  },
+  "dependencies": {
+    "@gorhom/bottom-sheet": "*",
+    "@prisma/client": "^6.2.1",
+    "react-native-gesture-handler": "*",
+    "react-native-reanimated": "*",
+    "socket.io-client": "*",
+    "stripe": "*"
+  }
+}
