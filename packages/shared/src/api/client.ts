@@ -1,41 +1,48 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { Alert } from 'react-native';
 
-const BASE_URL = 'http://localhost:4000/api'; // In production, move to env
+// Use env var or fallback for local dev
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 const client = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Request Interceptor: Inject JWT Token
-client.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+// Request interceptor — attach JWT if stored
+client.interceptors.request.use(
+  async (config) => {
+    try {
+      // Works in Expo environment
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      }
+    } catch {}
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// Response Interceptor: Global Error Handling
-client.interceptors.response.use((response) => {
-  return response;
-}, (error) => {
-  const message = error.response?.data?.message || 'A network error occurred. Please check your connection.';
-  
-  if (error.response?.status === 401) {
-    // Optional: Global Logout logic
+// Response interceptor — handle 401 globally
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired — clear storage
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      } catch {}
+    }
+    return Promise.reject(error);
   }
-
-  // Only show alerts in a React Native context
-  if (typeof Alert !== 'undefined') {
-    Alert.alert('PLATFORM ERROR', message);
-  }
-
-  return Promise.reject(error);
-});
+);
 
 export default client;

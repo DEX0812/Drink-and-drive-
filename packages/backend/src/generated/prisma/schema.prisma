@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../backend/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RIDER
+  DRIVER
+  ADMIN
+}
+
+enum Transmission {
+  MANUAL
+  AUTO
+}
+
+enum RideType {
+  HIRING
+  RIDE_HAILING
+}
+
+enum RideStatus {
+  REQUESTED
+  ACCEPTED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum VerificationStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String
+  role          Role           @default(RIDER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  vehicles      Vehicle[]
+  driverProfile DriverProfile?
+  ridesAsRider  Ride[]         @relation("RiderRides")
+  ridesAsDriver Ride[]         @relation("DriverRides")
+  reviewsSent   Review[]       @relation("ReviewsSent")
+  reviewsRecv   Review[]       @relation("ReviewsReceived")
+}
+
+model Vehicle {
+  id           String       @id @default(uuid())
+  ownerId      String
+  owner        User         @relation(fields: [ownerId], references: [id])
+  model        String
+  transmission Transmission
+  category     String?
+  licensePlate String       @unique
+  createdAt    DateTime     @default(now())
+}
+
+model DriverProfile {
+  id              String             @id @default(uuid())
+  driverId        String             @unique
+  driver          User               @relation(fields: [driverId], references: [id])
+  licenseNumber   String             @unique
+  experienceYears Int                @default(0)
+  manualCertified Boolean            @default(false)
+  status          VerificationStatus @default(PENDING)
+  onboardingDocs  String[]           @default([])
+  lastLocationLat Float?
+  lastLocationLng Float?
+  isOnline        Boolean            @default(false)
+  rating          Float              @default(0)
+}
+
+model Ride {
+  id           String     @id @default(uuid())
+  riderId      String
+  rider        User       @relation("RiderRides", fields: [riderId], references: [id])
+  driverId     String?
+  driver       User?      @relation("DriverRides", fields: [driverId], references: [id])
+  type         RideType
+  status       RideStatus @default(REQUESTED)
+  pickupLat    Float
+  pickupLng    Float
+  dropoffLat   Float
+  dropoffLng   Float
+  pickupAddr   String?
+  dropoffAddr  String?
+  distance     Float?
+  price        Float
+  serviceLevel String?    @default("STANDARD")
+  startTime    DateTime?
+  endTime      DateTime?
+  createdAt    DateTime   @default(now())
+  rating       Int?
+  reviews      Review[]
+  payments     Payment[]
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  rideId        String
+  ride          Ride     @relation(fields: [rideId], references: [id])
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  provider      String   @default("STRIPE")
+  paymentMethod String?
+  transactionId String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rideId     String
+  ride       Ride     @relation(fields: [rideId], references: [id])
+  fromUserId String
+  fromUser   User     @relation("ReviewsSent", fields: [fromUserId], references: [id])
+  toUserId   String
+  toUser     User     @relation("ReviewsReceived", fields: [toUserId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+}

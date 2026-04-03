@@ -1,23 +1,58 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity, Platform } from 'react-native';
-import MapView, { UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
-import { Search } from 'lucide-react-native';
+import { Navigation } from 'lucide-react-native';
 import BookingBottomSheet from './components/BookingBottomSheet';
+import io from 'socket.io-client';
 
-export default function HomeScreen() {
-  const { theme, mode, typography } = useTheme();
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+
+interface NearbyDriver {
+  driverId: string;
+  lat: number;
+  lng: number;
+  heading?: number;
+}
+
+interface Props {
+  onBook: (ride: any) => void;
+}
+
+export default function HomeScreen({ onBook }: Props) {
+  const { theme, typography, mode } = useTheme();
   const mapRef = useRef<MapView>(null);
-  const [region, setRegion] = useState({
-    latitude: 12.9716, // Bangalore
+  const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
+  const [region] = useState({
+    latitude: 12.9716,
     longitude: 77.5946,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+    latitudeDelta: 0.04,
+    longitudeDelta: 0.04,
   });
 
-  const tileUrl = mode === 'light' 
-    ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  const tileUrl =
+    mode === 'light'
+      ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+  // Listen for nearby driver location updates
+  useEffect(() => {
+    const socket = io(SOCKET_URL, { transports: ['websocket'] });
+
+    socket.on('locationUpdated', (data: NearbyDriver) => {
+      setNearbyDrivers((prev) => {
+        const existing = prev.findIndex((d) => d.driverId === data.driverId);
+        if (existing >= 0) {
+          const updated = [...prev];
+          updated[existing] = data;
+          return updated;
+        }
+        return [...prev, data];
+      });
+    });
+
+    return () => { socket.disconnect(); };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -29,31 +64,33 @@ export default function HomeScreen() {
         showsUserLocation
         showsMyLocationButton={false}
       >
-        <UrlTile 
-          urlTemplate={tileUrl}
-          maximumZ={19}
-          flipY={false}
-        />
+        <UrlTile urlTemplate={tileUrl} maximumZ={19} flipY={false} />
+
+        {/* Nearby Drivers */}
+        {nearbyDrivers.map((driver) => (
+          <Marker
+            key={driver.driverId}
+            coordinate={{ latitude: driver.lat, longitude: driver.lng }}
+            rotation={driver.heading || 0}
+          >
+            <View style={[styles.driverMarker, { backgroundColor: theme.text }]}>
+              <Navigation size={14} color={theme.background} fill={theme.background} />
+            </View>
+          </Marker>
+        ))}
       </MapView>
 
-      {/* 🔍 PREMIUM SEARCH OVERLAY */}
-      <SafeAreaView style={styles.searchOverlay}>
-        <TouchableOpacity 
-          activeOpacity={0.9}
-          style={[styles.searchBar, { backgroundColor: theme.background, borderColor: theme.border }]}
-        >
-          <View style={[styles.searchDot, { backgroundColor: theme.text }]} />
-          <Text style={[typography.body, { color: theme.textSecondary, flex: 1, fontSize: 18, fontWeight: '600' }]}>
-            Where to?
+      {/* Premium Header Badge */}
+      <SafeAreaView style={styles.header}>
+        <View style={[styles.logoBadge, { backgroundColor: theme.background, borderColor: theme.border }]}>
+          <View style={[styles.logoMark, { backgroundColor: theme.text }]} />
+          <Text style={[typography.label, { color: theme.text, fontSize: 11, marginLeft: 8 }]}>
+            DRIVESAFE
           </Text>
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <TouchableOpacity style={styles.nowBtn}>
-             <Text style={[typography.label, { color: theme.text, fontSize: 10 }]}>Now</Text>
-          </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
       </SafeAreaView>
-      
-      <BookingBottomSheet />
+
+      <BookingBottomSheet onBook={onBook} />
     </View>
   );
 }
@@ -61,39 +98,32 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { ...StyleSheet.absoluteFillObject },
-  searchOverlay: {
+  header: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 60 : 40,
     left: 20,
     right: 20,
     zIndex: 10,
   },
-  searchBar: {
+  logoBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
     borderWidth: 1,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.1, shadowRadius: 20 },
-      android: { elevation: 12 }
-    })
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
+      android: { elevation: 8 },
+    }),
   },
-  searchDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 16,
+  logoMark: { width: 8, height: 8, borderRadius: 4 },
+  driverMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  divider: {
-    width: 1,
-    height: 24,
-    marginHorizontal: 16,
-  },
-  nowBtn: {
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  }
 });

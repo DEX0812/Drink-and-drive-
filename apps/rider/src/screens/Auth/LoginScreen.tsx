@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, SafeAreaView, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from 'react-native';
-import { useAuth } from '../../../packages/shared/src/hooks/useAuth';
-import { useTheme } from '../../../packages/shared/src/theme/ThemeProvider';
-import { Button, Input, Heading } from '../../../packages/shared/src/components/Core';
+import {
+  StyleSheet, View, SafeAreaView, KeyboardAvoidingView,
+  Platform, Text, TouchableOpacity, Alert, Animated,
+} from 'react-native';
+import { useAuth } from '../../../../packages/shared/src/hooks/useAuth';
+import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
+import { Button, Input, Heading } from '../../../../packages/shared/src/components/Core';
+import { Shield } from 'lucide-react-native';
 
 export default function LoginScreen({ navigation }: any) {
   const { login } = useAuth();
@@ -12,13 +16,15 @@ export default function LoginScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) return alert('Fill all fields');
+    if (!email || !password) {
+      Alert.alert('Missing Fields', 'Please enter your email and password.');
+      return;
+    }
     setLoading(true);
     try {
       await login({ email, password });
-      // Navigation will handle the state change via Auth Context
-    } catch (e) {
-      alert('Login failed. Check credentials.');
+    } catch (e: any) {
+      Alert.alert('Login Failed', e?.response?.data?.message || 'Invalid credentials. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -26,47 +32,59 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.inner}
       >
-        <View style={styles.header}>
-          <Heading style={styles.title}>WELCOME BACK.</Heading>
-          <Text style={[typography.body, { color: theme.textSecondary }]}>
-            Login to access your premium fleet.
+        {/* Logo */}
+        <View style={styles.logoArea}>
+          <View style={[styles.logoCircle, { backgroundColor: theme.text }]}>
+            <Shield size={28} color={theme.background} />
+          </View>
+          <Text style={[typography.label, { color: theme.textSecondary, marginTop: 12, letterSpacing: 4 }]}>
+            DRIVESAFE
           </Text>
         </View>
 
+        {/* Headline */}
+        <View style={styles.header}>
+          <Heading style={styles.title}>Welcome{'\n'}Back.</Heading>
+          <Text style={[typography.body, { color: theme.textSecondary, marginTop: 8 }]}>
+            Sign in to request a professional driver
+          </Text>
+        </View>
+
+        {/* Form */}
         <View style={styles.form}>
-          <Input 
+          <Input
             label="EMAIL ADDRESS"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoCorrect={false}
           />
-          <Input 
+          <Input
             label="PASSWORD"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
-          
-          <Button 
-            label={loading ? "AUTHENTICATING..." : "LOG IN"} 
-            onPress={handleLogin} 
+
+          <Button
+            label={loading ? 'SIGNING IN...' : 'SIGN IN'}
+            onPress={handleLogin}
             style={styles.btn}
           />
         </View>
 
+        {/* Footer */}
         <View style={styles.footer}>
           <Text style={[typography.body, { color: theme.textSecondary }]}>
-            NEW TO DRIVESAFE? 
+            New to DriveSafe?{' '}
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={[typography.label, { color: theme.text, marginLeft: 5 }]}>
-              CREATE ACCOUNT
-            </Text>
+            <Text style={[typography.label, { color: theme.text }]}>Create Account</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -76,10 +94,18 @@ export default function LoginScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  inner: { flex: 1, padding: 30, justifyContent: 'center' },
-  header: { marginBottom: 50 },
-  title: { fontSize: 42, lineHeight: 48, marginBottom: 10 },
+  inner: { flex: 1, padding: 32, justifyContent: 'center' },
+  logoArea: { alignItems: 'center', marginBottom: 48 },
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  header: { marginBottom: 40 },
+  title: { fontSize: 48, lineHeight: 52, letterSpacing: -1.5 },
   form: { width: '100%' },
-  btn: { marginTop: 20 },
-  footer: { marginTop: 40, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }
+  btn: { marginTop: 8 },
+  footer: { marginTop: 40, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
 });

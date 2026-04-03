@@ -3,11 +3,14 @@ import { ThemeProvider } from '../../packages/shared/src/theme/ThemeProvider';
 import { useAuth } from '../../packages/shared/src/hooks/useAuth';
 import LoginScreen from './src/screens/Auth/LoginScreen';
 import RegisterScreen from './src/screens/Auth/RegisterScreen';
+import DashboardScreen from './src/screens/Dashboard/DashboardScreen';
 import IncomingRequestScreen from './src/screens/Ride/IncomingRequestScreen';
 import ActiveTripScreen from './src/screens/Ride/ActiveTripScreen';
 import TripSummaryScreen from './src/screens/Ride/TripSummaryScreen';
 import { useLocationStreamer } from '../../packages/shared/src/hooks/useLocationStreamer';
-import { View, Text } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
+
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
 
 function AppContent() {
   const { token, user, loading } = useAuth();
@@ -15,42 +18,61 @@ function AppContent() {
   const [activeRide, setActiveRide] = useState<any>(null);
   const [incomingRequest, setIncomingRequest] = useState<any>(null);
 
-  // Stream location while Online (not in a trip)
-  const { socket } = useLocationStreamer(user?.id, currentScreen === 'Dashboard' && !activeRide && !incomingRequest);
+  // Stream driver location to backend while online on dashboard
+  const { socket } = useLocationStreamer(
+    user?.id,
+    currentScreen === 'Dashboard' && !activeRide && !incomingRequest
+  );
 
-  // Mock an incoming request after 5 seconds of being logged in
+  // Listen for real ride requests via socket
   useEffect(() => {
-    if (token && !activeRide && !incomingRequest) {
-      const timer = setTimeout(() => {
-        setIncomingRequest({
-          id: 'ride-123',
-          riderName: 'Siddharth',
-          pickupAddress: '123 Elite Square, Bangalore',
-          carModel: 'Honda Civic 2024',
-          transmission: 'MANUAL',
-          category: 'SEDAN',
-          pickupLat: 12.9716,
-          pickupLng: 77.5946,
-          dropoffLat: 12.9141,
-          dropoffLng: 77.6413
-        });
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [token, activeRide, incomingRequest]);
+    if (!socket || !user?.id) return;
 
-  if (loading) return null;
+    // Register as driver so backend can target us
+    socket.emit('register:driver', user.id);
 
-  if (!token) {
-    if (currentScreen === 'Login') {
-      return <LoginScreen navigation={{ navigate: setCurrentScreen }} />;
-    }
-    return <RegisterScreen navigation={{ navigate: setCurrentScreen, goBack: () => setCurrentScreen('Login') }} />;
+    // Listen for incoming ride request
+    socket.on('rideRequested', (data: any) => {
+      setIncomingRequest(data);
+    });
+
+    socket.on('rideCancelled', () => {
+      setIncomingRequest(null);
+      setActiveRide(null);
+    });
+
+    return () => {
+      socket.off('rideRequested');
+      socket.off('rideCancelled');
+    };
+  }, [socket, user?.id]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+        <ActivityIndicator color="#fff" />
+      </View>
+    );
   }
 
+  if (!token) {
+    if (currentScreen === 'Login' || currentScreen === 'Dashboard') {
+      return <LoginScreen navigation={{ navigate: (s: string) => setCurrentScreen(s as any) }} />;
+    }
+    return (
+      <RegisterScreen
+        navigation={{
+          navigate: (s: string) => setCurrentScreen(s as any),
+          goBack: () => setCurrentScreen('Login'),
+        }}
+      />
+    );
+  }
+
+  // Incoming request takes priority
   if (incomingRequest) {
     return (
-      <IncomingRequestScreen 
+      <IncomingRequestScreen
         request={incomingRequest}
         onAccept={() => {
           setActiveRide(incomingRequest);
@@ -63,17 +85,19 @@ function AppContent() {
 
   if (activeRide) {
     return (
-      <ActiveTripScreen 
+      <ActiveTripScreen
         ride={activeRide}
-        driverId={user?.id}
-        onFinished={() => setCurrentScreen('TripSummary')}
+        driverId={user?.id || ''}
+        onFinished={() => {
+          setCurrentScreen('TripSummary');
+        }}
       />
     );
   }
 
   if (currentScreen === 'TripSummary') {
     return (
-      <TripSummaryScreen 
+      <TripSummaryScreen
         ride={activeRide}
         onFinish={() => {
           setActiveRide(null);
@@ -83,12 +107,7 @@ function AppContent() {
     );
   }
 
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-       <Text style={{ color: '#fff', fontSize: 24, fontWeight: '800' }}>ONLINE & READY.</Text>
-       <Text style={{ color: '#666', marginTop: 10 }}>Waiting for your next mission...</Text>
-    </View>
-  );
+  return <DashboardScreen />;
 }
 
 export default function App() {

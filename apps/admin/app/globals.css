@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #000000;
@@ -19,6 +17,7 @@ body {
 .leaflet-container {
   width: 100%;
   height: 100%;
+  background: #030303 !important;
 }
 
 .leaflet-tile {
@@ -31,8 +30,6 @@ body {
   border: 1px solid #333 !important;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.text-balance {
+  text-wrap: balance;
 }

@@ -4,20 +4,23 @@
   "private": true,
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only -r dotenv/config src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "express": "*",
-    "socket.io": "*",
+    "@prisma/client": "6.2.1",
+    "@types/express-rate-limit": "^5.1.3",
+    "axios": "*",
+    "bcryptjs": "*",
     "cors": "*",
     "dotenv": "*",
+    "express": "*",
+    "express-rate-limit": "^8.3.2",
     "jsonwebtoken": "*",
-    "bcryptjs": "*",
-    "stripe": "*",
     "prisma": "6.2.1",
-    "@prisma/client": "6.2.1"
+    "socket.io": "*",
+    "stripe": "*"
   },
   "devDependencies": {
     "ts-node-dev": "*",

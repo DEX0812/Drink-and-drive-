@@ -1,119 +1,176 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, Platform } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Platform, Alert,
+} from 'react-native';
 import MapView, { Marker, Polyline, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
-import { useLocationStreamer } from '../../../../packages/shared/src/hooks/useLocationStreamer';
-import { Button, Heading, SubHeading, Card, Spacer } from '../../../../packages/shared/src/components/Core';
-import { Navigation, ShieldAlert, Phone, CheckCircle, MessageCircle, MapPin, User, ChevronUp } from 'lucide-react-native';
+import { useTheme } from '../../../../../packages/shared/src/theme/ThemeProvider';
+import { useLocationStreamer } from '../../../../../packages/shared/src/hooks/useLocationStreamer';
+import client from '../../../../../packages/shared/src/api/client';
+import { Navigation, MapPin, Phone, ShieldAlert, CheckCircle } from 'lucide-react-native';
 
-interface ActiveTripProps {
-  ride: any; // Mocked ride with riderName, pickup, destination
+type TripPhase = 'ARRIVING' | 'ONGOING' | 'COMPLETING';
+
+interface Props {
+  ride: any;
   driverId: string;
   onFinished: () => void;
 }
 
-export default function ActiveTripScreen({ ride, driverId, onFinished }: ActiveTripProps) {
+export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) {
   const { theme, typography, mode } = useTheme();
-  const [status, setStatus] = useState<'PICKUP' | 'EN_ROUTE' | 'DROPOFF'>('PICKUP');
-  
-  // Start GPS Streaming as soon as the trip is active
-  useLocationStreamer(driverId, true);
+  const mapRef = useRef<MapView>(null);
+  const [phase, setPhase] = useState<TripPhase>('ARRIVING');
+  const [completing, setCompleting] = useState(false);
 
-  const tileUrl = mode === 'light' 
-    ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  const { socket } = useLocationStreamer(driverId, true);
+
+  const tileUrl =
+    mode === 'light'
+      ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+  const phaseConfig: Record<TripPhase, { label: string; color: string; next: string }> = {
+    ARRIVING: {
+      label: 'ARRIVED AT PICKUP',
+      color: '#007AFF',
+      next: 'Mark as Arrived',
+    },
+    ONGOING: {
+      label: 'COMPLETE TRIP',
+      color: '#34C759',
+      next: 'Complete Trip',
+    },
+    COMPLETING: {
+      label: 'COMPLETING...',
+      color: theme.border,
+      next: 'Completing...',
+    },
+  };
+
+  const handlePhaseAction = async () => {
+    if (phase === 'ARRIVING') {
+      // Driver arrived at pickup — start trip
+      try {
+        await client.post('/driver/complete', { rideId: ride.id });
+        setPhase('ONGOING');
+      } catch {
+        Alert.alert('Error', 'Could not update ride status');
+      }
+    } else if (phase === 'ONGOING') {
+      setCompleting(true);
+      setPhase('COMPLETING');
+      try {
+        await client.post('/driver/finish', { rideId: ride.id });
+        onFinished();
+      } catch {
+        Alert.alert('Error', 'Could not complete ride');
+        setPhase('ONGOING');
+        setCompleting(false);
+      }
+    }
+  };
+
+  const config = phaseConfig[phase];
+
+  const routeCoords = [
+    { latitude: ride.pickupLat || 12.9716, longitude: ride.pickupLng || 77.5946 },
+    { latitude: ride.dropoffLat || 12.9141, longitude: ride.dropoffLng || 77.6413 },
+  ];
 
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         provider={PROVIDER_DEFAULT}
-        style={styles.map}
+        style={StyleSheet.absoluteFillObject}
         initialRegion={{
-          latitude: ride.pickupLat || 12.9716,
-          longitude: ride.pickupLng || 77.5946,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitude: (ride.pickupLat + ride.dropoffLat) / 2 || 12.945,
+          longitude: (ride.pickupLng + ride.dropoffLng) / 2 || 77.618,
+          latitudeDelta: 0.08,
+          longitudeDelta: 0.08,
         }}
-        showsUserLocation
-        showsMyLocationButton={false}
       >
         <UrlTile urlTemplate={tileUrl} maximumZ={19} flipY={false} />
 
-        <Marker coordinate={{ latitude: ride.pickupLat, longitude: ride.pickupLng }}>
-          <View style={[styles.markerBase, { backgroundColor: theme.text }]}>
-             <View style={styles.markerInner} />
+        {/* Route Line */}
+        <Polyline
+          coordinates={routeCoords}
+          strokeColor={theme.text}
+          strokeWidth={3}
+          lineDashPattern={phase === 'ARRIVING' ? [6, 3] : []}
+        />
+
+        {/* Pickup */}
+        <Marker coordinate={routeCoords[0]}>
+          <View style={[styles.markerGreen]}>
+            <MapPin size={16} color="#fff" fill="#fff" />
           </View>
         </Marker>
 
-        <Polyline
-          coordinates={[
-            { latitude: ride.pickupLat, longitude: ride.pickupLng },
-            { latitude: ride.dropoffLat, longitude: ride.dropoffLng },
-          ]}
-          strokeColor={theme.text}
-          strokeWidth={4}
-        />
+        {/* Dropoff */}
+        <Marker coordinate={routeCoords[1]}>
+          <View style={[styles.markerBlack, { backgroundColor: theme.text }]}>
+            <MapPin size={16} color={theme.background} fill={theme.background} />
+          </View>
+        </Marker>
       </MapView>
 
+      {/* Status Header */}
+      <SafeAreaView style={styles.topBar}>
+        <View style={[styles.phaseBadge, { backgroundColor: config.color + '22', borderColor: config.color }]}>
+          <View style={[styles.phaseDot, { backgroundColor: config.color }]} />
+          <Text style={[typography.label, { color: config.color, fontSize: 10 }]}>
+            {phase === 'ARRIVING' ? 'EN ROUTE TO PICKUP' : 'TRIP IN PROGRESS'}
+          </Text>
+        </View>
+      </SafeAreaView>
+
+      {/* Bottom Panel */}
       <SafeAreaView style={styles.overlay}>
-         <Card style={styles.tripCard}>
-            <View style={styles.dragHandle}>
-               <View style={[styles.handleLine, { backgroundColor: theme.border }]} />
+        <View style={[styles.card, { backgroundColor: theme.background, borderColor: theme.border }]}>
+          {/* Rider Info */}
+          <View style={styles.riderRow}>
+            <View style={[styles.avatar, { backgroundColor: theme.surface }]}>
+              <Text style={[typography.h2, { color: theme.text }]}>
+                {ride.riderName?.[0] || 'R'}
+              </Text>
             </View>
-
-            <View style={styles.statusHeader}>
-               <View style={[styles.statusBadge, { backgroundColor: theme.surface }]}>
-                  <Text style={[typography.label, { color: theme.text, fontSize: 10 }]}>{status}</Text>
-               </View>
-               <View style={styles.timeInfo}>
-                  <Text style={[typography.h2, { fontSize: 24 }]}>12 min</Text>
-                  <Text style={[typography.body, { color: theme.textSecondary, fontSize: 12 }]}>To destination</Text>
-               </View>
-               <TouchableOpacity style={[styles.sosBtn, { borderColor: theme.error }]}>
-                  <ShieldAlert size={20} color="#FF3B30" />
-               </TouchableOpacity>
+            <View style={styles.riderInfo}>
+              <Text style={[typography.h2, { color: theme.text, fontSize: 18 }]}>
+                {ride.riderName || 'Rider'}
+              </Text>
+              <Text style={[typography.body, { color: theme.textSecondary, fontSize: 12 }]}>
+                {phase === 'ARRIVING' ? 'Waiting for you at pickup' : 'Trip ongoing · Drive safe'}
+              </Text>
             </View>
+            <TouchableOpacity style={[styles.callBtn, { backgroundColor: theme.surface }]}>
+              <Phone size={18} color={theme.text} />
+            </TouchableOpacity>
+          </View>
 
-            <Spacer size={24} />
-            <View style={[styles.divider, { backgroundColor: theme.border }]} />
-            <Spacer size={24} />
+          {/* SOS */}
+          <TouchableOpacity
+            onPress={() => Alert.alert('🚨 SOS', 'Emergency services have been notified.')}
+            style={styles.sosBtn}
+          >
+            <ShieldAlert size={14} color="#FF3B30" />
+            <Text style={[typography.label, { color: '#FF3B30', fontSize: 10, marginLeft: 6 }]}>
+              EMERGENCY SOS
+            </Text>
+          </TouchableOpacity>
 
-            <View style={styles.riderRow}>
-               <View style={[styles.avatar, { backgroundColor: theme.surface }]}>
-                  <User size={28} color={theme.textSecondary} />
-               </View>
-               <View style={styles.riderInfo}>
-                  <Heading style={{ fontSize: 22 }}>{ride.riderName || 'Siddharth'}</Heading>
-                  <View style={styles.locationSmall}>
-                     <MapPin size={12} color={theme.textSecondary} />
-                     <Text style={[typography.body, { color: theme.textSecondary, marginLeft: 4, fontSize: 13 }]} numberOfLines={1}>
-                        {ride.destinationAddress || 'Whitefield, Bangalore'}
-                     </Text>
-                  </View>
-               </View>
-               <View style={styles.riderActions}>
-                  <TouchableOpacity style={[styles.circleBtn, { backgroundColor: theme.surface }]}>
-                     <MessageCircle size={20} color={theme.text} />
-                  </TouchableOpacity>
-                  <Spacer size={12} horizontal />
-                  <TouchableOpacity style={[styles.circleBtn, { backgroundColor: theme.surface }]}>
-                     <Phone size={20} color={theme.text} />
-                  </TouchableOpacity>
-               </View>
-            </View>
-
-            <Spacer size={30} />
-
-            <Button 
-               label={status === 'PICKUP' ? 'RIDER PICKED UP' : (status === 'EN_ROUTE' ? 'ARRIVED AT DESTINATION' : 'COMPLETE TRIP')} 
-               onPress={() => {
-                  if (status === 'PICKUP') setStatus('EN_ROUTE');
-                  else if (status === 'EN_ROUTE') setStatus('DROPOFF');
-                  else onFinished();
-               }} 
-               style={styles.mainBtn}
-            />
-         </Card>
+          {/* CTA */}
+          <TouchableOpacity
+            onPress={handlePhaseAction}
+            disabled={completing}
+            style={[styles.ctaBtn, { backgroundColor: config.color }]}
+          >
+            <CheckCircle size={20} color="#fff" />
+            <Text style={[typography.label, { color: '#fff', marginLeft: 10 }]}>
+              {config.next}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -121,23 +178,73 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: ActiveT
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { ...StyleSheet.absoluteFillObject },
-  overlay: { position: 'absolute', bottom: 20, left: 10, right: 10 },
-  tripCard: { borderRadius: 32, padding: 24 },
-  dragHandle: { alignItems: 'center', marginBottom: 16 },
-  handleLine: { width: 40, height: 4, borderRadius: 2 },
-  statusHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  timeInfo: { alignItems: 'center' },
-  sosBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  divider: { height: 1, width: '100%' },
-  riderRow: { flexDirection: 'row', alignItems: 'center' },
-  avatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  topBar: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center', paddingTop: Platform.OS === 'ios' ? 60 : 40 },
+  phaseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  phaseDot: { width: 6, height: 6, borderRadius: 3, marginRight: 8 },
+  overlay: { position: 'absolute', bottom: 0, left: 0, right: 0 },
+  card: {
+    margin: 14,
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -10 }, shadowOpacity: 0.1, shadowRadius: 20 },
+      android: { elevation: 20 },
+    }),
+  },
+  riderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
   riderInfo: { flex: 1 },
-  locationSmall: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  riderActions: { flexDirection: 'row' },
-  circleBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  mainBtn: { height: 60 },
-  markerBase: { width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#fff' },
-  markerInner: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' }
+  callBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sosBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#FFF5F5',
+    borderRadius: 10,
+    marginBottom: 14,
+  },
+  ctaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    borderRadius: 14,
+  },
+  markerGreen: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#34C759',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerBlack: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

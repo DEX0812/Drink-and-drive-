@@ -1,47 +1,64 @@
 @echo off
 SETLOCAL EnableDelayedExpansion
-TITLE DriveSafe Platform Master Starter
+TITLE DriveSafe Platform Launcher
+COLOR 0B
 
-:: Get the directory where the script is located, safely quoted
 SET "PROJECT_DIR=%~dp0"
 CD /D "%PROJECT_DIR%"
 
-echo --------------------------------------------------------
-echo    🚀 STARTING THE DRIVESAFE PLATFORM...
-echo    Location: %PROJECT_DIR%
-echo --------------------------------------------------------
+echo.
+echo  ================================================
+echo    DRIVESAFE PLATFORM - PRODUCTION BUILD v1.0
+echo    On-Demand Personal Driver Service
+echo  ================================================
+echo.
 
-:: 1. Dependency Check
-if not exist "node_modules" (
-    echo [1/4] Installing platform dependencies...
-    call npm install
-) else (
-    echo [1/5] Checking Infrastructure...
-docker-compose up -d
-if %ERRORLEVEL% NEQ 0 (
-    echo [WARNING] Docker not found or failed to start. Ensure PostgreSQL is running manually.
-)
+:: PRE-FLIGHT: Cleanup Expo and Next.js state to prevent collisions/caching
+echo [SYSTEM] Performing Deep Clean (Cleaning Cache)...
+if exist "C:\Users\acer\.expo\state.json" del /f /q "C:\Users\acer\.expo\state.json" >nul 2>&1
+if exist "apps\admin\.next" rmdir /s /q "apps\admin\.next" >nul 2>&1
+echo          Environment Cleared.
 
-echo [2/5] Dependencies already installed. Skipping.
-)
+:: Step 1: Core Infrastructure (Database)
+echo [1/4] Starting Global Database...
+call docker-compose up -d >nul 2>&1
+echo          Database Active.
+timeout /t 3 /nobreak >nul
 
-:: 2. Database Sync
-echo [2/5] Running Prisma migrations & client generation...
-call npm run db:migrate
-call npx prisma generate --schema packages/db/prisma/schema.prisma
+:: Step 2: Prisma Logic
+echo [2/4] Synchronizing Data Mesh...
+SET "DATABASE_URL=postgresql://postgres:password@localhost:5432/drinkanddrive"
+call npx prisma generate --schema packages/db/prisma/schema.prisma >nul 2>&1
+echo          Prisma Synchronized.
 
-:: 3. Launching Services
-echo [3/4] Launching Dev Servers in separate windows...
-echo       (Please keep these windows open)
+:: Step 3: Launch Web Infrastructure & Open Browser
+echo [3/4] Launching Cloud Infrastructure...
+START "DriveSafe BACKEND" cmd /k "cd /d "%PROJECT_DIR%" && title [BACKEND] && call npm run backend:dev"
+timeout /t 3 /nobreak >nul
+START "DriveSafe ADMIN"   cmd /k "cd /d "%PROJECT_DIR%" && title [ADMIN] && call npm run admin:dev"
 
-START "DriveSafe - BACKEND" cmd /k "cd /d "%PROJECT_DIR%" && npm run backend:dev"
-START "DriveSafe - RIDER APP" cmd /k "cd /d "%PROJECT_DIR%" && npm run rider:dev"
-START "DriveSafe - DRIVER APP" cmd /k "cd /d "%PROJECT_DIR%" && npm run driver:dev"
-START "DriveSafe - ADMIN DASHBOARD" cmd /k "cd /d "%PROJECT_DIR%" && npm run admin:dev"
-
-echo [4/4] ALL SERVICES LAUNCHED.
-echo --------------------------------------------------------
-echo    🔥 DRIVESAFE IS READY. OPENING ADMIN DASHBOARD...
-echo --------------------------------------------------------
+:: LAUNCH BROWSER IMMEDIATELY
+echo          Opening Admin Dashboard...
+timeout /t 5 /nobreak >nul
 START http://localhost:3000
+
+:: Step 4: Mobile Stacks (Staggered for safety)
+echo [4/4] Orchestrating Mobile Applications...
+START "DriveSafe RIDER"   cmd /k "cd /d "%PROJECT_DIR%" && title [RIDER] && call npm run rider:dev"
+
+echo          Initializing Driver Neural Link (8s)...
+timeout /t 8 /nobreak >nul
+START "DriveSafe DRIVER"  cmd /k "cd /d "%PROJECT_DIR%" && title [DRIVER] && call npm run driver:dev"
+
+echo.
+echo  ================================================
+echo    DRIVESAFE IS NOW LIVE IN YOUR BROWSER!
+echo  ================================================
+echo.
+echo    ADMIN PANEL:  http://localhost:3000
+echo    HEALTH:       http://localhost:4000/health
+echo.
+echo  ================================================
+echo.
+
 pause

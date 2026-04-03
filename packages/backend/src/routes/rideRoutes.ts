@@ -1,11 +1,14 @@
-import { Router } from 'express';
-import { createRide, getRiderRides, rateRide } from '../controllers/rideController';
+import express from 'express';
 import { authenticate } from '../middleware/auth';
+import { createRide, getRiderRides, rateRide, fareEstimate, getRide, cancelRide } from '../controllers/rideController';
 
-const router = Router();
+const router = express.Router();
 
-router.post('/book', authenticate, createRide);
-router.get('/my-rides', authenticate, getRiderRides);
+router.get('/estimate', authenticate, fareEstimate);
+router.post('/request', authenticate, createRide);
+router.get('/history', authenticate, getRiderRides);
+router.get('/:id', authenticate, getRide);
+router.post('/cancel', authenticate, cancelRide);
 router.post('/rate', authenticate, rateRide);
 
 export default router;
