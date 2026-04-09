@@ -61,11 +61,13 @@ export const login = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
+      console.log(`[AUTH] Login Failed: User not found for email: ${email}`);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log(`[AUTH] Login Failed: Password mismatch for user: ${email}`);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -73,8 +75,11 @@ export const login = async (req: Request, res: Response) => {
       expiresIn: '1d',
     });
 
+    console.log(`[AUTH] Login Success: ${email} (${user.role})`);
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
+    console.error('[AUTH] Server Error during login:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+

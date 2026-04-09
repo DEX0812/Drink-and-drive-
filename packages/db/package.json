@@ -9,11 +9,15 @@
     "seed": "prisma db seed"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "prisma": "6.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
   }
 }

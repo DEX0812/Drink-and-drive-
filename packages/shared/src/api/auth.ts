@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:4000/api'; // In production, move to env
+const DEFAULT_IP = 'localhost';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || `http://${DEFAULT_IP}:4000/api`; 
 
 export interface AuthResponse {
   token: string;

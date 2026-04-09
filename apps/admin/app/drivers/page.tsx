@@ -20,6 +20,9 @@ interface DriverProfile {
     email: string;
     createdAt: string;
   };
+  licenseUrl?: string;
+  insuranceUrl?: string;
+  backgroundCheckUrl?: string;
 }
 
 const statusConfig = {
@@ -170,6 +173,34 @@ export default function DriversPage() {
                         Online
                       </span>
                     )}
+                  </div>
+
+                  {/* Document Links Section */}
+                  <div className="bg-[#050505] border border-zinc-900 rounded-xl p-4 mb-5">
+                    <p className="text-[9px] font-black text-zinc-500 tracking-[0.2em] mb-3 uppercase">Verification Documents</p>
+                    <div className="space-y-2">
+                       {[
+                         { label: 'Driving License', url: d.licenseUrl },
+                         { label: 'Vehicle Insurance', url: d.insuranceUrl },
+                         { label: 'Background Check', url: d.backgroundCheckUrl },
+                       ].map((doc) => (
+                         <div key={doc.label} className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-zinc-400">{doc.label}</span>
+                            {doc.url ? (
+                              <a 
+                                href={doc.url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-[10px] font-black text-emerald-500 hover:text-emerald-400 underline tracking-tighter"
+                              >
+                                VIEW_MEDIA
+                              </a>
+                            ) : (
+                              <span className="text-[10px] font-bold text-zinc-800">NOT_UPLOADED</span>
+                            )}
+                         </div>
+                       ))}
+                    </div>
                   </div>
 
                   {/* Action Buttons (PENDING only) */}

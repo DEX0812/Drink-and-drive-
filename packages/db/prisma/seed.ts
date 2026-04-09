@@ -1,8 +1,12 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding DriveSafe Platform...');
+
+  const hashedPassword = await bcrypt.hash('password123', 10);
 
   // 1. Create a Demo Rider
   const rider = await prisma.user.upsert({
@@ -10,7 +14,7 @@ async function main() {
     update: {},
     create: {
       email: 'rider@drivesafe.com',
-      password: 'password123', // In real app, this should be hashed
+      password: hashedPassword,
       name: 'Siddharth (Rider)',
       role: 'RIDER',
     },
@@ -22,7 +26,7 @@ async function main() {
     update: {},
     create: {
       email: 'driver@drivesafe.com',
-      password: 'password123',
+      password: hashedPassword,
       name: 'Rajiv (Auto Expert)',
       role: 'DRIVER',
     },
@@ -68,3 +72,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

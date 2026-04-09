@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import * as Location from 'expo-location';
 import io from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:4000';
+const DEFAULT_IP = 'localhost';
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || `http://${DEFAULT_IP}:4000`;
 
 export const useLocationStreamer = (driverId: string, isTracking: boolean) => {
   const [socket, setSocket] = useState<any>(null);

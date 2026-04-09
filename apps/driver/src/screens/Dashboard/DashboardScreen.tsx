@@ -4,10 +4,12 @@ import {
   Platform, Animated, ScrollView, Vibration,
 } from 'react-native';
 import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useTheme } from '../../../../../packages/shared/src/theme/ThemeProvider';
-import { useAuth } from '../../../../../packages/shared/src/hooks/useAuth';
-import client from '../../../../../packages/shared/src/api/client';
-import { Navigation, Star, Clock, TrendingUp, Shield, Power, Activity, Car } from 'lucide-react-native';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import { useAuth } from '@platform/shared/src/hooks/useAuth';
+import client from '@platform/shared/src/api/client';
+import { Navigation, Star, Clock, TrendingUp, Shield, Power, Activity, Car, FileText } from 'lucide-react-native';
+
+const Spacer = ({ size }: { size: number }) => <View style={{ height: size }} />;
 
 interface Stats {
   todayRides: number;
@@ -16,7 +18,11 @@ interface Stats {
   isOnline: boolean;
 }
 
-export default function DashboardScreen() {
+interface Props {
+  onNavigate?: (screen: string) => void;
+}
+
+export default function DashboardScreen({ onNavigate }: Props) {
   const { theme, typography, mode } = useTheme();
   const { user } = useAuth();
   const mapRef = useRef<MapView>(null);
@@ -81,7 +87,7 @@ export default function DashboardScreen() {
         {/* Modern Header */}
         <View style={styles.header}>
             <View>
-                <Text style={[typography.h3, { color: theme.textSecondary, fontSize: 10, letterSpacing: 2, fontWeight: '900' }]}>FLEET OPS V1</Text>
+                <Text style={[typography.h2, { color: theme.textSecondary, fontSize: 10, letterSpacing: 2, fontWeight: '900' }]}>FLEET OPS V1</Text>
                 <Text style={[typography.h1, { color: theme.text, fontSize: 32, fontWeight: '900', letterSpacing: -1, marginTop: 4 }]}>
                     {user?.name?.split(' ')[0] || 'COMMANDER'}
                 </Text>
@@ -167,10 +173,23 @@ export default function DashboardScreen() {
         <View style={[styles.safetyCard, { backgroundColor: theme.surface, borderLeftColor: '#3B82F6' }]}>
             <Shield size={20} color="#3B82F6" />
             <View style={{ flex: 1, marginLeft: 16 }}>
-                <Text style={[typography.h3, { color: theme.text, fontSize: 14, fontWeight: '800' }]}>Driver Protection Active</Text>
+                <Text style={[typography.h2, { color: theme.text, fontSize: 14, fontWeight: '800' }]}>Driver Protection Active</Text>
                 <Text style={[typography.body, { color: theme.textSecondary, fontSize: 11, marginTop: 2 }]}>Your insurance coverage is currently active and protecting your journey.</Text>
             </View>
         </View>
+
+        <Spacer size={24} />
+
+        <TouchableOpacity 
+          onPress={() => onNavigate?.('Documents')}
+          style={[styles.actionCard, { backgroundColor: theme.surface, borderLeftColor: '#FBBF24' }]}
+        >
+            <FileText size={20} color="#FBBF24" />
+            <View style={{ flex: 1, marginLeft: 16 }}>
+                <Text style={[typography.h2, { color: theme.text, fontSize: 14, fontWeight: '800' }]}>Verification Documents</Text>
+                <Text style={[typography.body, { color: theme.textSecondary, fontSize: 11, marginTop: 2 }]}>Upload and manage your license, insurance and IDs.</Text>
+            </View>
+        </TouchableOpacity>
 
       </Animated.ScrollView>
     </SafeAreaView>
@@ -215,5 +234,6 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
   mapOverlay: { ...StyleSheet.absoluteFillObject, padding: 16, justifyContent: 'flex-end' },
   glassBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, alignSelf: 'flex-start' },
-  safetyCard: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 24, borderLeftWidth: 4 },
+  safetyCard: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 24, borderLeftWidth: 4, marginBottom: 12 },
+  actionCard: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 24, borderLeftWidth: 4 },
 });

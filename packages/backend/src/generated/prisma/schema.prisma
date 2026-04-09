@@ -52,6 +52,7 @@ model User {
   ridesAsDriver Ride[]         @relation("DriverRides")
   reviewsSent   Review[]       @relation("ReviewsSent")
   reviewsRecv   Review[]       @relation("ReviewsReceived")
+  securityLogs  SecurityLog[]
 }
 
 model Vehicle {
@@ -66,43 +67,63 @@ model Vehicle {
 }
 
 model DriverProfile {
-  id              String             @id @default(uuid())
-  driverId        String             @unique
-  driver          User               @relation(fields: [driverId], references: [id])
-  licenseNumber   String             @unique
-  experienceYears Int                @default(0)
-  manualCertified Boolean            @default(false)
-  status          VerificationStatus @default(PENDING)
-  onboardingDocs  String[]           @default([])
-  lastLocationLat Float?
-  lastLocationLng Float?
-  isOnline        Boolean            @default(false)
-  rating          Float              @default(0)
+  id                 String             @id @default(uuid())
+  driverId           String             @unique
+  driver             User               @relation(fields: [driverId], references: [id])
+  licenseNumber      String             @unique
+  experienceYears    Int                @default(0)
+  manualCertified    Boolean            @default(false)
+  status             VerificationStatus @default(PENDING)
+  onboardingDocs     String[]           @default([])
+  lastLocationLat    Float?
+  lastLocationLng    Float?
+  isOnline           Boolean            @default(false)
+  rating             Float              @default(0)
+  licenseUrl         String?
+  insuranceUrl       String?
+  backgroundCheckUrl String?
 }
 
 model Ride {
-  id           String     @id @default(uuid())
-  riderId      String
-  rider        User       @relation("RiderRides", fields: [riderId], references: [id])
-  driverId     String?
-  driver       User?      @relation("DriverRides", fields: [driverId], references: [id])
-  type         RideType
-  status       RideStatus @default(REQUESTED)
-  pickupLat    Float
-  pickupLng    Float
-  dropoffLat   Float
-  dropoffLng   Float
-  pickupAddr   String?
-  dropoffAddr  String?
-  distance     Float?
-  price        Float
-  serviceLevel String?    @default("STANDARD")
-  startTime    DateTime?
-  endTime      DateTime?
-  createdAt    DateTime   @default(now())
-  rating       Int?
-  reviews      Review[]
-  payments     Payment[]
+  id            String        @id @default(uuid())
+  riderId       String
+  rider         User          @relation("RiderRides", fields: [riderId], references: [id])
+  driverId      String?
+  driver        User?         @relation("DriverRides", fields: [driverId], references: [id])
+  type          RideType
+  status        RideStatus    @default(REQUESTED)
+  pickupLat     Float
+  pickupLng     Float
+  dropoffLat    Float
+  dropoffLng    Float
+  pickupAddr    String?
+  dropoffAddr   String?
+  distance      Float?
+  price         Float?
+  serviceLevel  String?       @default("STANDARD")
+  startTime     DateTime?
+  endTime       DateTime?
+  createdAt     DateTime      @default(now())
+  routeGeometry String?       @db.Text
+  rating        Int?
+  otp           String?
+  otpVerified   Boolean       @default(false)
+  reviews       Review[]
+  payments      Payment[]
+  securityLogs  SecurityLog[]
+}
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  rideId    String?
+  ride      Ride?    @relation(fields: [rideId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  lat       Float
+  lng       Float
+  message   String
+  type      String   @default("EMERGENCY")
+  createdAt DateTime @default(now())
 }
 
 model Payment {

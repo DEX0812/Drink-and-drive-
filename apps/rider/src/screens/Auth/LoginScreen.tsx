@@ -3,9 +3,9 @@ import {
   StyleSheet, View, SafeAreaView, KeyboardAvoidingView,
   Platform, Text, TouchableOpacity, Alert, Animated,
 } from 'react-native';
-import { useAuth } from '../../../../packages/shared/src/hooks/useAuth';
-import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
-import { Button, Input, Heading } from '../../../../packages/shared/src/components/Core';
+import { useAuth } from '@platform/shared/src/hooks/useAuth';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import { Button, Input, Heading } from '@platform/shared/src/components/Core';
 import { Shield } from 'lucide-react-native';
 
 export default function LoginScreen({ navigation }: any) {
@@ -24,10 +24,12 @@ export default function LoginScreen({ navigation }: any) {
     try {
       await login({ email, password });
     } catch (e: any) {
-      Alert.alert('Login Failed', e?.response?.data?.message || 'Invalid credentials. Please try again.');
+      const errorMsg = e.message || e?.response?.data?.message || 'Invalid credentials. Please try again.';
+      Alert.alert('Login Failed', errorMsg);
     } finally {
       setLoading(false);
     }
+
   };
 
   return (

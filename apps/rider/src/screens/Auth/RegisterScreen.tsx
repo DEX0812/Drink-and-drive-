@@ -3,9 +3,9 @@ import {
   StyleSheet, View, SafeAreaView, KeyboardAvoidingView,
   Platform, Text, TouchableOpacity, Alert, ScrollView,
 } from 'react-native';
-import { useAuth } from '../../../../packages/shared/src/hooks/useAuth';
-import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
-import { Button, Input, Heading } from '../../../../packages/shared/src/components/Core';
+import { useAuth } from '@platform/shared/src/hooks/useAuth';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import { Button, Input, Heading } from '@platform/shared/src/components/Core';
 import { Shield, Car } from 'lucide-react-native';
 
 export default function RegisterScreen({ navigation }: any) {
@@ -30,10 +30,12 @@ export default function RegisterScreen({ navigation }: any) {
     try {
       await register({ name, email, password, role });
     } catch (e: any) {
-      Alert.alert('Registration Failed', e?.response?.data?.message || 'Could not create account.');
+      const errorMsg = e.message || e?.response?.data?.message || 'Could not create account.';
+      Alert.alert('Registration Failed', errorMsg);
     } finally {
       setLoading(false);
     }
+
   };
 
   return (

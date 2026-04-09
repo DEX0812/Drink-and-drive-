@@ -1,38 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import client from '../api/client';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'RIDER' | 'DRIVER' | 'ADMIN';
-}
+import { AuthContext } from '../context/AuthContext';
 
 export const useAuth = () => {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const context = useContext(AuthContext);
+  
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
 
-  useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const storedToken = await SecureStore.getItemAsync('token');
-        const storedUser = await SecureStore.getItemAsync('user');
-        if (storedToken) {
-          setToken(storedToken);
-          if (storedUser) setUser(JSON.parse(storedUser));
-          // Attach token to future requests
-          client.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        }
-      } catch (err) {
-        console.error('Token load error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadToken();
-  }, []);
+  const { token, user, loading, setToken, setUser, setLoading } = context;
 
   const login = async (credentials: { email: string; password: string }) => {
     const res = await client.post('/auth/login', credentials);

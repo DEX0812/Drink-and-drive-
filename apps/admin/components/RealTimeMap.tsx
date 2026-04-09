@@ -14,6 +14,10 @@ interface DriverLocation {
   heading?: number;
 }
 
+interface Props {
+  onEmergency?: (data: any) => void;
+}
+
 // Custom Marker Creator
 const createCarIcon = (active: boolean) => {
   return L.divIcon({
@@ -40,11 +44,35 @@ const createCarIcon = (active: boolean) => {
   });
 };
 
-const RealTimeMap = () => {
+const RealTimeMap = ({ onEmergency }: Props) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const routesRef = useRef<Map<string, L.Polyline>>(new Map());
   const [connected, setConnected] = useState(false);
+
+  // Helper to decode OSRM polylines
+  const decodePolyline = (str: string) => {
+    let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
+    while (index < str.length) {
+      shift = 0; result = 0;
+      do {
+        byte = str.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+      lat += ((result & 1) ? ~(result >> 1) : (result >> 1));
+      shift = 0; result = 0;
+      do {
+        byte = str.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+      lng += ((result & 1) ? ~(result >> 1) : (result >> 1));
+      coordinates.push([lat / 1e5, lng / 1e5] as [number, number]);
+    }
+    return coordinates;
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined' || !mapContainerRef.current) return;
@@ -104,6 +132,32 @@ const RealTimeMap = () => {
             });
             
             markers.set(data.driverId, marker);
+        }
+    });
+
+    socket.on('emergencyAlert', (data: any) => {
+        console.error('🚨 EMERGENCY SOS RECEIVED', data);
+        onEmergency?.(data);
+    });
+
+    socket.on('rideCreated', (data: any) => {
+        if (data.routeGeometry) {
+            const coords = decodePolyline(data.routeGeometry);
+            const polyline = L.polyline(coords, {
+                color: '#10b981',
+                weight: 3,
+                opacity: 0.6,
+                dashArray: '10, 10'
+            }).addTo(map);
+            
+            routesRef.current.set(data.rideId, polyline);
+        }
+    });
+
+    socket.on('rideFinished', (data: any) => {
+        if (routesRef.current.has(data.rideId)) {
+            routesRef.current.get(data.rideId)!.remove();
+            routesRef.current.delete(data.rideId);
         }
     });
 

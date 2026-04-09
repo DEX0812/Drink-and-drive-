@@ -12,9 +12,9 @@ import {
   Platform,
   Vibration,
 } from 'react-native';
-import { useTheme } from '../../../../../packages/shared/src/theme/ThemeProvider';
-import { useAuth } from '../../../../../packages/shared/src/hooks/useAuth';
-import client from '../../../../../packages/shared/src/api/client';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import { useAuth } from '@platform/shared/src/hooks/useAuth';
+import client from '@platform/shared/src/api/client';
 import {
   MapPin,
   Navigation,
@@ -66,6 +66,12 @@ export default function BookingBottomSheet({ onBook }: Props) {
   const [loadingEstimate, setLoadingEstimate] = useState(false);
   const [booking, setBooking] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState<{ pickup: any, dropoff: any }>({
+    pickup: { lat: 12.9716, lng: 77.5946 }, // Default Bangalore
+    dropoff: null,
+  });
 
   // Sheet animation
   const sheetY = useRef(new Animated.Value(0)).current;
@@ -85,6 +91,37 @@ export default function BookingBottomSheet({ onBook }: Props) {
     }).start();
   };
 
+  const handleSearch = async (query: string, type: 'pickup' | 'dropoff') => {
+    if (type === 'pickup') setPickupAddr(query);
+    else setDropoffAddr(query);
+
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const { data } = await client.get('/rides/search-address', { params: { q: query } });
+      setSuggestions(data.map((s: any) => ({ ...s, target: type })));
+    } catch {
+      // Ignore search errors
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const selectSuggestion = (s: any) => {
+    if (s.target === 'pickup') {
+      setPickupAddr(s.name);
+      setSelectedCoords(prev => ({ ...prev, pickup: { lat: s.lat, lng: s.lng } }));
+    } else {
+      setDropoffAddr(s.name);
+      setSelectedCoords(prev => ({ ...prev, dropoff: { lat: s.lat, lng: s.lng } }));
+    }
+    setSuggestions([]);
+  };
+
   const fetchEstimate = useCallback(async () => {
     if (!dropoffAddr && !expanded) return;
     
@@ -93,10 +130,10 @@ export default function BookingBottomSheet({ onBook }: Props) {
       // Mock coordinates for demo
       const { data } = await client.get('/rides/estimate', {
         params: {
-          pickupLat: 12.9716,
-          pickupLng: 77.5946,
-          dropoffLat: 12.9141,
-          dropoffLng: 77.6413,
+          pickupLat: selectedCoords.pickup.lat,
+          pickupLng: selectedCoords.pickup.lng,
+          dropoffLat: selectedCoords.dropoff?.lat || 12.9141,
+          dropoffLng: selectedCoords.dropoff?.lng || 77.6413,
           type: SERVICE_TYPES[selectedService].id,
         },
       });
@@ -124,10 +161,10 @@ export default function BookingBottomSheet({ onBook }: Props) {
     setBooking(true);
     try {
       const { data } = await client.post('/rides/request', {
-        pickupLat: 12.9716,
-        pickupLng: 77.5946,
-        dropoffLat: 12.9141,
-        dropoffLng: 77.6413,
+        pickupLat: selectedCoords.pickup.lat,
+        pickupLng: selectedCoords.pickup.lng,
+        dropoffLat: selectedCoords.dropoff?.lat,
+        dropoffLng: selectedCoords.dropoff?.lng,
         pickupAddr: pickupAddr || 'Gammel Kongevej 12, BLR',
         dropoffAddr,
         type: SERVICE_TYPES[selectedService].id,
@@ -159,7 +196,7 @@ export default function BookingBottomSheet({ onBook }: Props) {
       {/* Visual Handle */}
       <TouchableOpacity activeOpacity={1} onPress={toggleSheet} style={styles.handleArea}>
         <View style={[styles.handle, { backgroundColor: theme.border }]} />
-      </header>
+      </TouchableOpacity>
 
       <View style={styles.container}>
         {/* Header Indicator */}
@@ -200,7 +237,7 @@ export default function BookingBottomSheet({ onBook }: Props) {
                   <View style={[styles.iconBox, { backgroundColor: active ? service.color : theme.border + '20' }]}>
                     <Icon size={20} color={active ? '#fff' : theme.textSecondary} />
                   </View>
-                  <Text style={[typography.h3, { color: active ? theme.text : theme.textSecondary, fontSize: 13, marginTop: 12 }]}>
+                  <Text style={[typography.h2, { color: active ? theme.text : theme.textSecondary, fontSize: 13, marginTop: 12 }]}>
                     {service.label}
                   </Text>
                   <Text style={[typography.body, { color: theme.textSecondary, fontSize: 9, marginTop: 2 }]} numberOfLines={1}>
@@ -225,7 +262,7 @@ export default function BookingBottomSheet({ onBook }: Props) {
                   placeholderTextColor={theme.textSecondary}
                   style={[styles.input, { color: theme.text }]}
                   value={pickupAddr}
-                  onChangeText={setPickupAddr}
+                  onChangeText={(t) => handleSearch(t, 'pickup')}
                 />
                 <View style={[styles.divider, { backgroundColor: theme.border }]} />
                 <TextInput
@@ -233,11 +270,31 @@ export default function BookingBottomSheet({ onBook }: Props) {
                   placeholderTextColor={theme.textSecondary}
                   style={[styles.input, { color: theme.text }]}
                   value={dropoffAddr}
-                  onChangeText={setDropoffAddr}
+                  onChangeText={(t) => handleSearch(t, 'dropoff')}
                   onFocus={() => { if (!expanded) toggleSheet(); }}
                 />
               </View>
             </View>
+
+            {/* Suggestions Overlay */}
+            {suggestions.length > 0 && (
+              <View style={[styles.suggestionList, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                 {suggestions.map((s, i) => (
+                   <TouchableOpacity 
+                     key={i} 
+                     onPress={() => selectSuggestion(s)}
+                     style={[styles.suggestionItem, { borderBottomColor: theme.border }]}
+                   >
+                      <MapPin size={12} color={theme.textSecondary} />
+                      <View style={{ marginLeft: 12 }}>
+                         <Text style={[typography.label, { color: theme.text, fontSize: 11 }]}>{s.name}</Text>
+                         {s.city && <Text style={[typography.body, { color: theme.textSecondary, fontSize: 9 }]}>{s.city}, {s.country}</Text>}
+                      </View>
+                   </TouchableOpacity>
+                 ))}
+                 {searching && <ActivityIndicator size="small" style={{ marginVertical: 10 }} />}
+              </View>
+            )}
           </View>
 
           {expanded && (
@@ -360,4 +417,19 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center' },
   mainBtn: { height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   btnContent: { flexDirection: 'row', alignItems: 'center' },
+  suggestionList: { 
+    marginTop: 16, 
+    borderRadius: 16, 
+    borderWidth: 1, 
+    padding: 8,
+    maxHeight: 200,
+    overflow: 'hidden'
+  },
+  suggestionItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 10, 
+    paddingHorizontal: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth
+  }
 });

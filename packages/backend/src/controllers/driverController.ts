@@ -106,6 +106,13 @@ export const acceptRide = async (req: AuthRequest, res: Response) => {
       status: 'ACCEPTED',
     });
 
+    // Simulated Push Notification
+    io.to(`ride:${rideId}`).emit('push-notification', {
+      title: '🚖 Driver Found!',
+      body: `${updated.driver?.name} is on the way to your location.`,
+      type: 'DRIVER_ACCEPTED'
+    });
+
     res.json({ success: true, ride: updated });
   } catch (err: any) {
     if (err.code === 'P2025') {
@@ -127,6 +134,10 @@ export const completeRide = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: 'Not authorized for this ride' });
     }
 
+    if (!ride.otpVerified) {
+      return res.status(400).json({ message: 'Please verify the ride OTP first.' });
+    }
+
     const updated = await prisma.ride.update({
       where: { id: rideId },
       data: { status: 'ONGOING', startTime: ride.startTime || new Date() },
@@ -136,6 +147,12 @@ export const completeRide = async (req: AuthRequest, res: Response) => {
     io.to(`ride:${rideId}`).emit('rideStatusUpdate', {
       rideId,
       status: 'ONGOING',
+    });
+
+    io.to(`ride:${rideId}`).emit('push-notification', {
+      title: '🚀 Trip Started',
+      body: 'Your safe journey with DriveSafe has officially begun.',
+      type: 'RIDE_STARTED'
     });
 
     res.json({ success: true, ride: updated });
@@ -166,6 +183,12 @@ export const finishRide = async (req: AuthRequest, res: Response) => {
       rideId,
       status: 'COMPLETED',
       price: updated.price,
+    });
+
+    io.to(`ride:${rideId}`).emit('push-notification', {
+      title: '🏁 Destination Reached',
+      body: `You have arrived safely. Total fare: ₹${Math.round(updated.price || 0)}.`,
+      type: 'RIDE_FINISHED'
     });
 
     res.json({ success: true, ride: updated });
@@ -210,5 +233,52 @@ export const getDriverProfile = async (req: AuthRequest, res: Response) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching profile' });
+  }
+};
+
+// POST /api/driver/verify-otp
+export const verifyOtp = async (req: AuthRequest, res: Response) => {
+  const { rideId, otp } = req.body;
+  const driverId = req.user.id;
+
+  try {
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride || ride.driverId !== driverId) {
+      return res.status(403).json({ message: 'Not authorized for this ride' });
+    }
+
+    if (ride.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP. Please ask the rider for the correct code.' });
+    }
+
+    await prisma.ride.update({
+      where: { id: rideId },
+      data: { otpVerified: true },
+    });
+
+    res.json({ success: true, message: 'OTP Verified successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error verifying OTP' });
+  }
+};
+
+// PATCH /api/driver/documents — Update driver verification documents
+export const updateDocuments = async (req: AuthRequest, res: Response) => {
+  const { licenseUrl, insuranceUrl, backgroundCheckUrl } = req.body;
+  const driverId = req.user.id;
+
+  try {
+    const profile = await prisma.driverProfile.update({
+      where: { driverId },
+      data: {
+        licenseUrl,
+        insuranceUrl,
+        backgroundCheckUrl,
+        status: 'PENDING', // Re-trigger verification logic
+      },
+    });
+    res.json({ success: true, profile });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating documents' });
   }
 };

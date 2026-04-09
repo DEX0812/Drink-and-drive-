@@ -4,8 +4,8 @@ import {
   Platform, Animated, Vibration, Alert,
 } from 'react-native';
 import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useTheme } from '../../../../../packages/shared/src/theme/ThemeProvider';
-import client from '../../../../../packages/shared/src/api/client';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import client from '@platform/shared/src/api/client';
 import {
   MapPin, Car, Navigation, X, Check,
   Clock, DollarSign, AlertTriangle, User,

@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Platform, Alert,
+  StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Platform, Alert, ActivityIndicator, TextInput,
 } from 'react-native';
 import MapView, { Marker, Polyline, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useTheme } from '../../../../../packages/shared/src/theme/ThemeProvider';
-import { useLocationStreamer } from '../../../../../packages/shared/src/hooks/useLocationStreamer';
-import client from '../../../../../packages/shared/src/api/client';
-import { Navigation, MapPin, Phone, ShieldAlert, CheckCircle } from 'lucide-react-native';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import { useLocationStreamer } from '@platform/shared/src/hooks/useLocationStreamer';
+import client from '@platform/shared/src/api/client';
+import { Navigation, MapPin, Phone, ShieldAlert, CheckCircle, Key } from 'lucide-react-native';
+import polyline from '@mapbox/polyline';
 
 type TripPhase = 'ARRIVING' | 'ONGOING' | 'COMPLETING';
 
@@ -21,8 +22,25 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) 
   const mapRef = useRef<MapView>(null);
   const [phase, setPhase] = useState<TripPhase>('ARRIVING');
   const [completing, setCompleting] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const { socket } = useLocationStreamer(driverId, true);
+
+  const [routeCoords, setRouteCoords] = useState<{ latitude: number, longitude: number }[]>([]);
+
+  useEffect(() => {
+    if (ride.routeGeometry) {
+      const decoded = polyline.decode(ride.routeGeometry);
+      setRouteCoords(decoded.map(c => ({ latitude: c[0], longitude: c[1] })));
+    } else {
+      setRouteCoords([
+        { latitude: ride.pickupLat || 12.9716, longitude: ride.pickupLng || 77.5946 },
+        { latitude: ride.dropoffLat || 12.9141, longitude: ride.dropoffLng || 77.6413 },
+      ]);
+    }
+  }, [ride.routeGeometry]);
 
   const tileUrl =
     mode === 'light'
@@ -47,8 +65,51 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) 
     },
   };
 
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 4) return;
+    setVerifyingOtp(true);
+    try {
+      await client.post('/driver/verify-otp', { rideId: ride.id, otp });
+      setOtpVerified(true);
+      if (Platform.OS !== 'web') {
+        Alert.alert(
+          'OTP Verified!',
+          'The rider code is correct. You can now start the trip.',
+          [
+            { text: 'START TRIP NOW', onPress: () => handlePhaseAction() },
+            { text: 'OK' }
+          ]
+        );
+      } else {
+        handlePhaseAction();
+      }
+    } catch (err: any) {
+      Alert.alert('Invalid OTP', err.response?.data?.message || 'The code entered is incorrect.');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const handleSos = async () => {
+    try {
+      await client.post('/rides/sos', {
+        rideId: ride.id,
+        lat: ride.pickupLat,
+        lng: ride.pickupLng,
+        message: 'DRIVER TRIGGERED EMERGENCY SOS'
+      });
+      if (Platform.OS !== 'web') Alert.alert('🚨 SOS SENT', 'Emergency dispatch has been notified.');
+    } catch {
+      Alert.alert('Error', 'Failed to send SOS signal.');
+    }
+  };
+
   const handlePhaseAction = async () => {
     if (phase === 'ARRIVING') {
+      if (!otpVerified) {
+        Alert.alert('OTP Required', 'Please enter and verify the 4-digit code from the rider first.');
+        return;
+      }
       // Driver arrived at pickup — start trip
       try {
         await client.post('/driver/complete', { rideId: ride.id });
@@ -71,11 +132,6 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) 
   };
 
   const config = phaseConfig[phase];
-
-  const routeCoords = [
-    { latitude: ride.pickupLat || 12.9716, longitude: ride.pickupLng || 77.5946 },
-    { latitude: ride.dropoffLat || 12.9141, longitude: ride.dropoffLng || 77.6413 },
-  ];
 
   return (
     <View style={styles.container}>
@@ -101,14 +157,14 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) 
         />
 
         {/* Pickup */}
-        <Marker coordinate={routeCoords[0]}>
+        <Marker coordinate={{ latitude: ride.pickupLat, longitude: ride.pickupLng }}>
           <View style={[styles.markerGreen]}>
             <MapPin size={16} color="#fff" fill="#fff" />
           </View>
         </Marker>
 
         {/* Dropoff */}
-        <Marker coordinate={routeCoords[1]}>
+        <Marker coordinate={{ latitude: ride.dropoffLat, longitude: ride.dropoffLng }}>
           <View style={[styles.markerBlack, { backgroundColor: theme.text }]}>
             <MapPin size={16} color={theme.background} fill={theme.background} />
           </View>
@@ -150,7 +206,7 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) 
 
           {/* SOS */}
           <TouchableOpacity
-            onPress={() => Alert.alert('🚨 SOS', 'Emergency services have been notified.')}
+            onPress={handleSos}
             style={styles.sosBtn}
           >
             <ShieldAlert size={14} color="#FF3B30" />
@@ -158,6 +214,41 @@ export default function ActiveTripScreen({ ride, driverId, onFinished }: Props) 
               EMERGENCY SOS
             </Text>
           </TouchableOpacity>
+
+          {/* OTP Verification Section (Only shown in ARRIVING phase) */}
+          {phase === 'ARRIVING' && !otpVerified && (
+            <View style={[styles.otpSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+               <View style={styles.otpHeader}>
+                  <Key size={14} color={theme.textSecondary} />
+                  <Text style={[typography.label, { color: theme.textSecondary, fontSize: 10, marginLeft: 8 }]}>RIDER VERIFICATION CODE</Text>
+               </View>
+               <View style={styles.otpInputRow}>
+                  <TextInput
+                    style={[styles.otpInput, { color: theme.text, borderColor: theme.border }]}
+                    placeholder="ENTER 4-DIGIT CODE"
+                    placeholderTextColor={theme.textSecondary}
+                    keyboardType="numeric"
+                    maxLength={4}
+                    value={otp}
+                    onChangeText={setOtp}
+                  />
+                  <TouchableOpacity 
+                    onPress={handleVerifyOtp}
+                    disabled={otp.length !== 4 || verifyingOtp}
+                    style={[styles.verifyBtn, { backgroundColor: theme.text, opacity: otp.length === 4 ? 1 : 0.5 }]}
+                  >
+                    {verifyingOtp ? <ActivityIndicator size="small" color={theme.background} /> : <Text style={[typography.label, { color: theme.background, fontSize: 10 }]}>VERIFY</Text>}
+                  </TouchableOpacity>
+               </View>
+            </View>
+          )}
+
+          {otpVerified && phase === 'ARRIVING' && (
+            <View style={styles.verifiedBadge}>
+               <CheckCircle size={14} color="#34C759" />
+               <Text style={[typography.label, { color: '#34C759', fontSize: 10, marginLeft: 8 }]}>RIDER VERIFIED</Text>
+            </View>
+          )}
 
           {/* CTA */}
           <TouchableOpacity
@@ -247,4 +338,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  otpSection: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  otpHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  otpInputRow: { flexDirection: 'row', gap: 10 },
+  otpInput: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 4,
+  },
+  verifyBtn: {
+    width: 80,
+    height: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F2FFF5',
+    borderRadius: 12,
+  }
 });

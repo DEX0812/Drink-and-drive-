@@ -11,7 +11,9 @@
     "expo-secure-store": "*",
     "react": "*",
     "react-native": "*",
-    "socket.io-client": "*"
+    "socket.io-client": "*",
+    "@mapbox/polyline": "^1.2.1",
+    "lucide-react-native": "*"
   },
   "devDependencies": {
     "typescript": "*"

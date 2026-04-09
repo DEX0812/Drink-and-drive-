@@ -1,12 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity, Platform } from 'react-native';
 import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
 import { Navigation } from 'lucide-react-native';
 import BookingBottomSheet from './components/BookingBottomSheet';
 import io from 'socket.io-client';
 
-const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+import client from '@platform/shared/src/api/client';
+
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://10.3.5.82:4000';
 
 interface NearbyDriver {
   driverId: string;
@@ -34,6 +36,21 @@ export default function HomeScreen({ onBook }: Props) {
     mode === 'light'
       ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
       : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+  // Check for active ride on mount (State Hydration)
+  useEffect(() => {
+    const checkActiveRide = async () => {
+      try {
+        const { data } = await client.get('/rides/current');
+        if (data && ['REQUESTED', 'ACCEPTED', 'ONGOING'].includes(data.status)) {
+          onBook(data);
+        }
+      } catch (err) {
+        console.log('Hydration check failed', err);
+      }
+    };
+    checkActiveRide();
+  }, []);
 
   // Listen for nearby driver location updates
   useEffect(() => {

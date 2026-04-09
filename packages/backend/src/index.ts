@@ -7,13 +7,18 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes';
 import vehicleRoutes from './routes/vehicleRoutes';
 import rideRoutes from './routes/rideRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import driverRoutes from './routes/driverRoutes';
+import { authenticate } from './middleware/auth';
+import { adminAuth } from './middleware/adminAuth';
 import prisma from './utils/prisma';
+import logger from './utils/logger';
 
 const app = express();
 const server = http.createServer(app);
@@ -25,15 +30,42 @@ export const io = new Server(server, {
 
 // Track driver socket IDs: driverId → socketId
 const driverSockets = new Map<string, string>();
+const driverHeartbeats = new Map<string, number>();
+
+// Presence checker (every 30s)
+setInterval(async () => {
+  const now = Date.now();
+  for (const [driverId, lastSeen] of driverHeartbeats.entries()) {
+    if (now - lastSeen > 45000) { // 45s timeout
+       driverHeartbeats.delete(driverId);
+       const sid = driverSockets.get(driverId);
+       if (sid) {
+         const driverSocket = io.sockets.sockets.get(sid);
+         if (driverSocket) driverSocket.disconnect(true);
+       }
+       
+       await prisma.driverProfile.update({
+         where: { driverId },
+         data: { isOnline: false }
+       }).catch(() => {});
+       console.log(`Driver ${driverId} timed out`);
+    }
+  }
+}, 30000);
 
 io.on('connection', (socket) => {
-  console.log('Socket connected:', socket.id);
+  logger.info(`Socket connected: ${socket.id}`);
 
   // Driver registers their socket for targeted events
   socket.on('register:driver', (driverId: string) => {
     driverSockets.set(driverId, socket.id);
+    driverHeartbeats.set(driverId, Date.now());
     socket.join(`driver:${driverId}`);
     console.log(`Driver ${driverId} registered socket ${socket.id}`);
+  });
+
+  socket.on('heartbeat', (driverId: string) => {
+    driverHeartbeats.set(driverId, Date.now());
   });
 
   // Rider subscribes to their ride room for updates
@@ -76,7 +108,7 @@ io.on('connection', (socket) => {
 // Global rate limiter (100 requests per 15 minutes per IP)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000, // Increased for development
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many requests, please try again later.' },
@@ -85,11 +117,13 @@ const limiter = rateLimit({
 // Higher limit for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 500, // Increased for development debugging
   message: { message: 'Too many auth attempts, please try again later.' },
 });
 
-app.use(cors({ origin: '*' }));
+app.use(helmet());
+app.use(compression());
+app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 app.use(express.json());
 app.use('/api', limiter);
 
@@ -100,13 +134,27 @@ app.use('/api/rides', rideRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/driver', driverRoutes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check (Deep)
+app.get('/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ 
+      status: 'ok', 
+      database: 'connected',
+      timestamp: new Date().toISOString() 
+    });
+  } catch (err) {
+    logger.error('Health Check Failed:', err);
+    res.status(503).json({ 
+      status: 'error', 
+      database: 'disconnected',
+      timestamp: new Date().toISOString() 
+    });
+  }
 });
 
-// Admin endpoints (no auth for now — add ADMIN middleware in production)
-app.get('/api/admin/metrics', async (req, res) => {
+// Admin endpoints (Protected with RBAC)
+app.get('/api/admin/metrics', adminAuth, async (req, res) => {
   try {
     const [activeRides, onlineDrivers, totalRidesToday, revenue] = await Promise.all([
       prisma.ride.count({ where: { status: { in: ['ACCEPTED', 'ONGOING'] } } }),
@@ -136,7 +184,7 @@ app.get('/api/admin/metrics', async (req, res) => {
   }
 });
 
-app.get('/api/admin/drivers', async (req, res) => {
+app.get('/api/admin/drivers', adminAuth, async (req, res) => {
   try {
     const drivers = await prisma.driverProfile.findMany({
       include: { driver: { select: { id: true, name: true, email: true, createdAt: true } } },
@@ -148,7 +196,7 @@ app.get('/api/admin/drivers', async (req, res) => {
   }
 });
 
-app.patch('/api/admin/drivers/:driverId/verify', async (req, res) => {
+app.patch('/api/admin/drivers/:driverId/verify', adminAuth, async (req, res) => {
   const { status } = req.body; // ACTIVE or REJECTED
   try {
     const profile = await prisma.driverProfile.update({
@@ -161,7 +209,7 @@ app.patch('/api/admin/drivers/:driverId/verify', async (req, res) => {
   }
 });
 
-app.get('/api/admin/rides', async (req, res) => {
+app.get('/api/admin/rides', adminAuth, async (req, res) => {
   try {
     const rides = await prisma.ride.findMany({
       include: {
@@ -179,10 +227,11 @@ app.get('/api/admin/rides', async (req, res) => {
 
 // ─── Start Server ──────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => {
-  console.log(`\n🚀 DriveSafe Backend running on port ${PORT}`);
-  console.log(`📡 WebSocket server active`);
-  console.log(`🏥 Health: http://localhost:${PORT}/health\n`);
+server.listen(Number(PORT), '0.0.0.0', () => {
+  logger.info(`🚀 DriveSafe Backend running on all interfaces at port ${PORT}`);
+  logger.info(`📡 WebSocket server active`);
+  logger.info(`🏥 Health: http://localhost:${PORT}/health`);
 });
+
 
 export default app;

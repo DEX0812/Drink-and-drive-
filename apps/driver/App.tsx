@@ -1,22 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider } from '../../packages/shared/src/theme/ThemeProvider';
-import { useAuth } from '../../packages/shared/src/hooks/useAuth';
+import { ThemeProvider } from '@platform/shared/src/theme/ThemeProvider';
+import { useAuth } from '@platform/shared/src/hooks/useAuth';
+import { useNotifications } from '@platform/shared/src/hooks/useNotifications';
+import client from '@platform/shared/src/api/client';
 import LoginScreen from './src/screens/Auth/LoginScreen';
 import RegisterScreen from './src/screens/Auth/RegisterScreen';
 import DashboardScreen from './src/screens/Dashboard/DashboardScreen';
 import IncomingRequestScreen from './src/screens/Ride/IncomingRequestScreen';
 import ActiveTripScreen from './src/screens/Ride/ActiveTripScreen';
 import TripSummaryScreen from './src/screens/Ride/TripSummaryScreen';
-import { useLocationStreamer } from '../../packages/shared/src/hooks/useLocationStreamer';
+import DocumentsScreen from './src/screens/Profile/DocumentsScreen';
+import { useLocationStreamer } from '@platform/shared/src/hooks/useLocationStreamer';
 import { View, ActivityIndicator } from 'react-native';
+import { registerRootComponent } from 'expo';
 
-const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://10.3.5.82:4000';
 
 function AppContent() {
   const { token, user, loading } = useAuth();
-  const [currentScreen, setCurrentScreen] = useState<'Login' | 'Register' | 'Dashboard' | 'TripSummary'>('Login');
+  const [currentScreen, setCurrentScreen] = useState<'Login' | 'Register' | 'Dashboard' | 'TripSummary' | 'Documents'>('Login');
   const [activeRide, setActiveRide] = useState<any>(null);
   const [incomingRequest, setIncomingRequest] = useState<any>(null);
+
+  useNotifications(user?.id, true);
+
+  // Hydrate active ride on startup
+  useEffect(() => {
+    if (token && !activeRide) {
+       client.get('/rides/current')
+         .then(({ data }) => {
+            if (data) setActiveRide(data);
+         })
+         .catch(() => {});
+    }
+  }, [token]);
 
   // Stream driver location to backend while online on dashboard
   const { socket } = useLocationStreamer(
@@ -107,13 +124,23 @@ function AppContent() {
     );
   }
 
-  return <DashboardScreen />;
+  if (currentScreen === 'Documents') {
+    return <DocumentsScreen onBack={() => setCurrentScreen('Dashboard')} />;
+  }
+
+  return <DashboardScreen onNavigate={(s: any) => setCurrentScreen(s)} />;
 }
+
+import { AuthProvider } from '@platform/shared/src/context/AuthContext';
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
+
+registerRootComponent(App);

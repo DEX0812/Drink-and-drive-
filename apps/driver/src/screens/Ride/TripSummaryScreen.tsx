@@ -3,7 +3,7 @@ import {
   StyleSheet, View, Text, TouchableOpacity, SafeAreaView,
   Animated, Platform,
 } from 'react-native';
-import { useTheme } from '../../../../../packages/shared/src/theme/ThemeProvider';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
 import { CheckCircle, Star, TrendingUp, Clock, Navigation } from 'lucide-react-native';
 
 interface Props {

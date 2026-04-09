@@ -3,9 +3,9 @@ import {
   StyleSheet, View, Text, SafeAreaView, TouchableOpacity,
   ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '../../../../packages/shared/src/theme/ThemeProvider';
-import { Button, Heading, SubHeading } from '../../../../packages/shared/src/components/Core';
-import client from '../../../../packages/shared/src/api/client';
+import { useTheme } from '@platform/shared/src/theme/ThemeProvider';
+import { Button, Heading, SubHeading } from '@platform/shared/src/components/Core';
+import client from '@platform/shared/src/api/client';
 import { CreditCard, Star, CheckCircle } from 'lucide-react-native';
 
 interface PaymentRatingProps {

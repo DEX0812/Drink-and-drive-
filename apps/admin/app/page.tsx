@@ -52,6 +52,7 @@ export default function Dashboard() {
   });
   const [recentRides, setRecentRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(true);
+  const [emergency, setEmergency] = useState<any>(null);
 
   const fetchData = async () => {
     try {
@@ -191,8 +192,51 @@ export default function Dashboard() {
         {/* Global Mesh Map Container */}
         <main className="flex-1 relative overflow-hidden bg-black">
           <div className="absolute inset-0 z-0">
-             <RealTimeMap />
+             <RealTimeMap onEmergency={(data) => setEmergency(data)} />
           </div>
+
+          {/* Emergency SOS Alert Overlay */}
+          {emergency && (
+            <div className="absolute top-10 left-10 right-10 z-[3000] animate-in fade-in zoom-in duration-500">
+               <div className="bg-[#1a0505] border-2 border-rose-600 rounded-3xl p-8 shadow-[0_0_100px_rgba(225,29,72,0.4)] flex flex-col items-center">
+                  <div className="w-20 h-20 bg-rose-600 rounded-full flex items-center justify-center animate-bounce shadow-[0_0_40px_rgba(225,29,72,0.8)] mb-6">
+                     <Shield className="text-white" size={40} />
+                  </div>
+                  <h2 className="text-4xl font-black text-white tracking-tight mb-2">EMERGENCY SOS SIGNAL</h2>
+                  <p className="text-rose-400 font-bold tracking-[0.2em] mb-8 uppercase animate-pulse">Critical Security Alert Detected</p>
+                  
+                  <div className="grid grid-cols-2 gap-8 w-full max-w-2xl bg-black/40 rounded-2xl p-6 border border-rose-900/30 mb-8">
+                     <div>
+                        <p className="text-[10px] font-black text-rose-500/50 tracking-widest uppercase mb-1">Ride ID</p>
+                        <p className="text-lg font-black text-white uppercase">{emergency.rideId.slice(0, 16)}</p>
+                     </div>
+                     <div>
+                        <p className="text-[10px] font-black text-rose-500/50 tracking-widest uppercase mb-1">Signal Type</p>
+                        <p className="text-lg font-black text-white uppercase">{emergency.type || 'SOS_BUTTON_TRIGGER'}</p>
+                     </div>
+                     <div className="col-span-2">
+                        <p className="text-[10px] font-black text-rose-500/50 tracking-widest uppercase mb-1">Message</p>
+                        <p className="text-xl font-bold text-rose-100 italic">"{emergency.message}"</p>
+                     </div>
+                  </div>
+
+                  <div className="flex gap-4 w-full max-w-sm">
+                    <button 
+                      onClick={() => setEmergency(null)}
+                      className="flex-1 px-8 py-5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-2xl transition-all shadow-xl uppercase tracking-widest text-sm"
+                    >
+                      Acknowledge & Dispatch
+                    </button>
+                    <button 
+                      onClick={() => setEmergency(null)}
+                      className="px-8 py-5 bg-zinc-900 text-zinc-400 font-black rounded-2xl border border-zinc-800 hover:text-white transition-all text-sm uppercase"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+               </div>
+            </div>
+          )}
 
           {/* Map Controls / Labels */}
           <div className="absolute bottom-10 left-10 z-10 flex flex-col gap-2">

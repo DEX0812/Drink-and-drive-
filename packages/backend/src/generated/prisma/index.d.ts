@@ -34,6 +34,11 @@ export type DriverProfile = $Result.DefaultSelection<Prisma.$DriverProfilePayloa
  */
 export type Ride = $Result.DefaultSelection<Prisma.$RidePayload>
 /**
+ * Model SecurityLog
+ * 
+ */
+export type SecurityLog = $Result.DefaultSelection<Prisma.$SecurityLogPayload>
+/**
  * Model Payment
  * 
  */
@@ -278,6 +283,16 @@ export class PrismaClient<
     * ```
     */
   get ride(): Prisma.RideDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.securityLog`: Exposes CRUD operations for the **SecurityLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SecurityLogs
+    * const securityLogs = await prisma.securityLog.findMany()
+    * ```
+    */
+  get securityLog(): Prisma.SecurityLogDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.payment`: Exposes CRUD operations for the **Payment** model.
@@ -742,6 +757,7 @@ export namespace Prisma {
     Vehicle: 'Vehicle',
     DriverProfile: 'DriverProfile',
     Ride: 'Ride',
+    SecurityLog: 'SecurityLog',
     Payment: 'Payment',
     Review: 'Review'
   };
@@ -759,7 +775,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "vehicle" | "driverProfile" | "ride" | "payment" | "review"
+      modelProps: "user" | "vehicle" | "driverProfile" | "ride" | "securityLog" | "payment" | "review"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1059,6 +1075,80 @@ export namespace Prisma {
           }
         }
       }
+      SecurityLog: {
+        payload: Prisma.$SecurityLogPayload<ExtArgs>
+        fields: Prisma.SecurityLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SecurityLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SecurityLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>
+          }
+          findFirst: {
+            args: Prisma.SecurityLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SecurityLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>
+          }
+          findMany: {
+            args: Prisma.SecurityLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>[]
+          }
+          create: {
+            args: Prisma.SecurityLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>
+          }
+          createMany: {
+            args: Prisma.SecurityLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SecurityLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>[]
+          }
+          delete: {
+            args: Prisma.SecurityLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>
+          }
+          update: {
+            args: Prisma.SecurityLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.SecurityLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SecurityLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SecurityLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.SecurityLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityLogPayload>
+          }
+          aggregate: {
+            args: Prisma.SecurityLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSecurityLog>
+          }
+          groupBy: {
+            args: Prisma.SecurityLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SecurityLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SecurityLogCountArgs<ExtArgs>
+            result: $Utils.Optional<SecurityLogCountAggregateOutputType> | number
+          }
+        }
+      }
       Payment: {
         payload: Prisma.$PaymentPayload<ExtArgs>
         fields: Prisma.PaymentFieldRefs
@@ -1295,6 +1385,7 @@ export namespace Prisma {
     vehicle?: VehicleOmit
     driverProfile?: DriverProfileOmit
     ride?: RideOmit
+    securityLog?: SecurityLogOmit
     payment?: PaymentOmit
     review?: ReviewOmit
   }
@@ -1396,6 +1487,7 @@ export namespace Prisma {
     ridesAsDriver: number
     reviewsSent: number
     reviewsRecv: number
+    securityLogs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1404,6 +1496,7 @@ export namespace Prisma {
     ridesAsDriver?: boolean | UserCountOutputTypeCountRidesAsDriverArgs
     reviewsSent?: boolean | UserCountOutputTypeCountReviewsSentArgs
     reviewsRecv?: boolean | UserCountOutputTypeCountReviewsRecvArgs
+    securityLogs?: boolean | UserCountOutputTypeCountSecurityLogsArgs
   }
 
   // Custom InputTypes
@@ -1452,6 +1545,13 @@ export namespace Prisma {
     where?: ReviewWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSecurityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SecurityLogWhereInput
+  }
+
 
   /**
    * Count Type RideCountOutputType
@@ -1460,11 +1560,13 @@ export namespace Prisma {
   export type RideCountOutputType = {
     reviews: number
     payments: number
+    securityLogs: number
   }
 
   export type RideCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     reviews?: boolean | RideCountOutputTypeCountReviewsArgs
     payments?: boolean | RideCountOutputTypeCountPaymentsArgs
+    securityLogs?: boolean | RideCountOutputTypeCountSecurityLogsArgs
   }
 
   // Custom InputTypes
@@ -1490,6 +1592,13 @@ export namespace Prisma {
    */
   export type RideCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PaymentWhereInput
+  }
+
+  /**
+   * RideCountOutputType without action
+   */
+  export type RideCountOutputTypeCountSecurityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SecurityLogWhereInput
   }
 
 
@@ -1683,6 +1792,7 @@ export namespace Prisma {
     ridesAsDriver?: boolean | User$ridesAsDriverArgs<ExtArgs>
     reviewsSent?: boolean | User$reviewsSentArgs<ExtArgs>
     reviewsRecv?: boolean | User$reviewsRecvArgs<ExtArgs>
+    securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1724,6 +1834,7 @@ export namespace Prisma {
     ridesAsDriver?: boolean | User$ridesAsDriverArgs<ExtArgs>
     reviewsSent?: boolean | User$reviewsSentArgs<ExtArgs>
     reviewsRecv?: boolean | User$reviewsRecvArgs<ExtArgs>
+    securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1738,6 +1849,7 @@ export namespace Prisma {
       ridesAsDriver: Prisma.$RidePayload<ExtArgs>[]
       reviewsSent: Prisma.$ReviewPayload<ExtArgs>[]
       reviewsRecv: Prisma.$ReviewPayload<ExtArgs>[]
+      securityLogs: Prisma.$SecurityLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2147,6 +2259,7 @@ export namespace Prisma {
     ridesAsDriver<T extends User$ridesAsDriverArgs<ExtArgs> = {}>(args?: Subset<T, User$ridesAsDriverArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
     reviewsSent<T extends User$reviewsSentArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewsSentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
     reviewsRecv<T extends User$reviewsRecvArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewsRecvArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
+    securityLogs<T extends User$securityLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$securityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2695,6 +2808,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReviewScalarFieldEnum | ReviewScalarFieldEnum[]
+  }
+
+  /**
+   * User.securityLogs
+   */
+  export type User$securityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    where?: SecurityLogWhereInput
+    orderBy?: SecurityLogOrderByWithRelationInput | SecurityLogOrderByWithRelationInput[]
+    cursor?: SecurityLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SecurityLogScalarFieldEnum | SecurityLogScalarFieldEnum[]
   }
 
   /**
@@ -3825,6 +3962,9 @@ export namespace Prisma {
     lastLocationLng: number | null
     isOnline: boolean | null
     rating: number | null
+    licenseUrl: string | null
+    insuranceUrl: string | null
+    backgroundCheckUrl: string | null
   }
 
   export type DriverProfileMaxAggregateOutputType = {
@@ -3838,6 +3978,9 @@ export namespace Prisma {
     lastLocationLng: number | null
     isOnline: boolean | null
     rating: number | null
+    licenseUrl: string | null
+    insuranceUrl: string | null
+    backgroundCheckUrl: string | null
   }
 
   export type DriverProfileCountAggregateOutputType = {
@@ -3852,6 +3995,9 @@ export namespace Prisma {
     lastLocationLng: number
     isOnline: number
     rating: number
+    licenseUrl: number
+    insuranceUrl: number
+    backgroundCheckUrl: number
     _all: number
   }
 
@@ -3881,6 +4027,9 @@ export namespace Prisma {
     lastLocationLng?: true
     isOnline?: true
     rating?: true
+    licenseUrl?: true
+    insuranceUrl?: true
+    backgroundCheckUrl?: true
   }
 
   export type DriverProfileMaxAggregateInputType = {
@@ -3894,6 +4043,9 @@ export namespace Prisma {
     lastLocationLng?: true
     isOnline?: true
     rating?: true
+    licenseUrl?: true
+    insuranceUrl?: true
+    backgroundCheckUrl?: true
   }
 
   export type DriverProfileCountAggregateInputType = {
@@ -3908,6 +4060,9 @@ export namespace Prisma {
     lastLocationLng?: true
     isOnline?: true
     rating?: true
+    licenseUrl?: true
+    insuranceUrl?: true
+    backgroundCheckUrl?: true
     _all?: true
   }
 
@@ -4009,6 +4164,9 @@ export namespace Prisma {
     lastLocationLng: number | null
     isOnline: boolean
     rating: number
+    licenseUrl: string | null
+    insuranceUrl: string | null
+    backgroundCheckUrl: string | null
     _count: DriverProfileCountAggregateOutputType | null
     _avg: DriverProfileAvgAggregateOutputType | null
     _sum: DriverProfileSumAggregateOutputType | null
@@ -4042,6 +4200,9 @@ export namespace Prisma {
     lastLocationLng?: boolean
     isOnline?: boolean
     rating?: boolean
+    licenseUrl?: boolean
+    insuranceUrl?: boolean
+    backgroundCheckUrl?: boolean
     driver?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["driverProfile"]>
 
@@ -4057,6 +4218,9 @@ export namespace Prisma {
     lastLocationLng?: boolean
     isOnline?: boolean
     rating?: boolean
+    licenseUrl?: boolean
+    insuranceUrl?: boolean
+    backgroundCheckUrl?: boolean
     driver?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["driverProfile"]>
 
@@ -4072,6 +4236,9 @@ export namespace Prisma {
     lastLocationLng?: boolean
     isOnline?: boolean
     rating?: boolean
+    licenseUrl?: boolean
+    insuranceUrl?: boolean
+    backgroundCheckUrl?: boolean
     driver?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["driverProfile"]>
 
@@ -4087,9 +4254,12 @@ export namespace Prisma {
     lastLocationLng?: boolean
     isOnline?: boolean
     rating?: boolean
+    licenseUrl?: boolean
+    insuranceUrl?: boolean
+    backgroundCheckUrl?: boolean
   }
 
-  export type DriverProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "driverId" | "licenseNumber" | "experienceYears" | "manualCertified" | "status" | "onboardingDocs" | "lastLocationLat" | "lastLocationLng" | "isOnline" | "rating", ExtArgs["result"]["driverProfile"]>
+  export type DriverProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "driverId" | "licenseNumber" | "experienceYears" | "manualCertified" | "status" | "onboardingDocs" | "lastLocationLat" | "lastLocationLng" | "isOnline" | "rating" | "licenseUrl" | "insuranceUrl" | "backgroundCheckUrl", ExtArgs["result"]["driverProfile"]>
   export type DriverProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     driver?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -4117,6 +4287,9 @@ export namespace Prisma {
       lastLocationLng: number | null
       isOnline: boolean
       rating: number
+      licenseUrl: string | null
+      insuranceUrl: string | null
+      backgroundCheckUrl: string | null
     }, ExtArgs["result"]["driverProfile"]>
     composites: {}
   }
@@ -4552,6 +4725,9 @@ export namespace Prisma {
     readonly lastLocationLng: FieldRef<"DriverProfile", 'Float'>
     readonly isOnline: FieldRef<"DriverProfile", 'Boolean'>
     readonly rating: FieldRef<"DriverProfile", 'Float'>
+    readonly licenseUrl: FieldRef<"DriverProfile", 'String'>
+    readonly insuranceUrl: FieldRef<"DriverProfile", 'String'>
+    readonly backgroundCheckUrl: FieldRef<"DriverProfile", 'String'>
   }
     
 
@@ -5004,7 +5180,10 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     createdAt: Date | null
+    routeGeometry: string | null
     rating: number | null
+    otp: string | null
+    otpVerified: boolean | null
   }
 
   export type RideMaxAggregateOutputType = {
@@ -5025,7 +5204,10 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     createdAt: Date | null
+    routeGeometry: string | null
     rating: number | null
+    otp: string | null
+    otpVerified: boolean | null
   }
 
   export type RideCountAggregateOutputType = {
@@ -5046,7 +5228,10 @@ export namespace Prisma {
     startTime: number
     endTime: number
     createdAt: number
+    routeGeometry: number
     rating: number
+    otp: number
+    otpVerified: number
     _all: number
   }
 
@@ -5089,7 +5274,10 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     createdAt?: true
+    routeGeometry?: true
     rating?: true
+    otp?: true
+    otpVerified?: true
   }
 
   export type RideMaxAggregateInputType = {
@@ -5110,7 +5298,10 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     createdAt?: true
+    routeGeometry?: true
     rating?: true
+    otp?: true
+    otpVerified?: true
   }
 
   export type RideCountAggregateInputType = {
@@ -5131,7 +5322,10 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     createdAt?: true
+    routeGeometry?: true
     rating?: true
+    otp?: true
+    otpVerified?: true
     _all?: true
   }
 
@@ -5234,12 +5428,15 @@ export namespace Prisma {
     pickupAddr: string | null
     dropoffAddr: string | null
     distance: number | null
-    price: number
+    price: number | null
     serviceLevel: string | null
     startTime: Date | null
     endTime: Date | null
     createdAt: Date
+    routeGeometry: string | null
     rating: number | null
+    otp: string | null
+    otpVerified: boolean
     _count: RideCountAggregateOutputType | null
     _avg: RideAvgAggregateOutputType | null
     _sum: RideSumAggregateOutputType | null
@@ -5279,11 +5476,15 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     createdAt?: boolean
+    routeGeometry?: boolean
     rating?: boolean
+    otp?: boolean
+    otpVerified?: boolean
     rider?: boolean | UserDefaultArgs<ExtArgs>
     driver?: boolean | Ride$driverArgs<ExtArgs>
     reviews?: boolean | Ride$reviewsArgs<ExtArgs>
     payments?: boolean | Ride$paymentsArgs<ExtArgs>
+    securityLogs?: boolean | Ride$securityLogsArgs<ExtArgs>
     _count?: boolean | RideCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ride"]>
 
@@ -5305,7 +5506,10 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     createdAt?: boolean
+    routeGeometry?: boolean
     rating?: boolean
+    otp?: boolean
+    otpVerified?: boolean
     rider?: boolean | UserDefaultArgs<ExtArgs>
     driver?: boolean | Ride$driverArgs<ExtArgs>
   }, ExtArgs["result"]["ride"]>
@@ -5328,7 +5532,10 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     createdAt?: boolean
+    routeGeometry?: boolean
     rating?: boolean
+    otp?: boolean
+    otpVerified?: boolean
     rider?: boolean | UserDefaultArgs<ExtArgs>
     driver?: boolean | Ride$driverArgs<ExtArgs>
   }, ExtArgs["result"]["ride"]>
@@ -5351,15 +5558,19 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     createdAt?: boolean
+    routeGeometry?: boolean
     rating?: boolean
+    otp?: boolean
+    otpVerified?: boolean
   }
 
-  export type RideOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "riderId" | "driverId" | "type" | "status" | "pickupLat" | "pickupLng" | "dropoffLat" | "dropoffLng" | "pickupAddr" | "dropoffAddr" | "distance" | "price" | "serviceLevel" | "startTime" | "endTime" | "createdAt" | "rating", ExtArgs["result"]["ride"]>
+  export type RideOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "riderId" | "driverId" | "type" | "status" | "pickupLat" | "pickupLng" | "dropoffLat" | "dropoffLng" | "pickupAddr" | "dropoffAddr" | "distance" | "price" | "serviceLevel" | "startTime" | "endTime" | "createdAt" | "routeGeometry" | "rating" | "otp" | "otpVerified", ExtArgs["result"]["ride"]>
   export type RideInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rider?: boolean | UserDefaultArgs<ExtArgs>
     driver?: boolean | Ride$driverArgs<ExtArgs>
     reviews?: boolean | Ride$reviewsArgs<ExtArgs>
     payments?: boolean | Ride$paymentsArgs<ExtArgs>
+    securityLogs?: boolean | Ride$securityLogsArgs<ExtArgs>
     _count?: boolean | RideCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type RideIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5378,6 +5589,7 @@ export namespace Prisma {
       driver: Prisma.$UserPayload<ExtArgs> | null
       reviews: Prisma.$ReviewPayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
+      securityLogs: Prisma.$SecurityLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5392,12 +5604,15 @@ export namespace Prisma {
       pickupAddr: string | null
       dropoffAddr: string | null
       distance: number | null
-      price: number
+      price: number | null
       serviceLevel: string | null
       startTime: Date | null
       endTime: Date | null
       createdAt: Date
+      routeGeometry: string | null
       rating: number | null
+      otp: string | null
+      otpVerified: boolean
     }, ExtArgs["result"]["ride"]>
     composites: {}
   }
@@ -5796,6 +6011,7 @@ export namespace Prisma {
     driver<T extends Ride$driverArgs<ExtArgs> = {}>(args?: Subset<T, Ride$driverArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", ClientOptions> | null, null, ExtArgs, ClientOptions>
     reviews<T extends Ride$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Ride$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
     payments<T extends Ride$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Ride$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
+    securityLogs<T extends Ride$securityLogsArgs<ExtArgs> = {}>(args?: Subset<T, Ride$securityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findMany", ClientOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5842,7 +6058,10 @@ export namespace Prisma {
     readonly startTime: FieldRef<"Ride", 'DateTime'>
     readonly endTime: FieldRef<"Ride", 'DateTime'>
     readonly createdAt: FieldRef<"Ride", 'DateTime'>
+    readonly routeGeometry: FieldRef<"Ride", 'String'>
     readonly rating: FieldRef<"Ride", 'Int'>
+    readonly otp: FieldRef<"Ride", 'String'>
+    readonly otpVerified: FieldRef<"Ride", 'Boolean'>
   }
     
 
@@ -6294,6 +6513,30 @@ export namespace Prisma {
   }
 
   /**
+   * Ride.securityLogs
+   */
+  export type Ride$securityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    where?: SecurityLogWhereInput
+    orderBy?: SecurityLogOrderByWithRelationInput | SecurityLogOrderByWithRelationInput[]
+    cursor?: SecurityLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SecurityLogScalarFieldEnum | SecurityLogScalarFieldEnum[]
+  }
+
+  /**
    * Ride without action
    */
   export type RideDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6309,6 +6552,1156 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: RideInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SecurityLog
+   */
+
+  export type AggregateSecurityLog = {
+    _count: SecurityLogCountAggregateOutputType | null
+    _avg: SecurityLogAvgAggregateOutputType | null
+    _sum: SecurityLogSumAggregateOutputType | null
+    _min: SecurityLogMinAggregateOutputType | null
+    _max: SecurityLogMaxAggregateOutputType | null
+  }
+
+  export type SecurityLogAvgAggregateOutputType = {
+    lat: number | null
+    lng: number | null
+  }
+
+  export type SecurityLogSumAggregateOutputType = {
+    lat: number | null
+    lng: number | null
+  }
+
+  export type SecurityLogMinAggregateOutputType = {
+    id: string | null
+    rideId: string | null
+    userId: string | null
+    lat: number | null
+    lng: number | null
+    message: string | null
+    type: string | null
+    createdAt: Date | null
+  }
+
+  export type SecurityLogMaxAggregateOutputType = {
+    id: string | null
+    rideId: string | null
+    userId: string | null
+    lat: number | null
+    lng: number | null
+    message: string | null
+    type: string | null
+    createdAt: Date | null
+  }
+
+  export type SecurityLogCountAggregateOutputType = {
+    id: number
+    rideId: number
+    userId: number
+    lat: number
+    lng: number
+    message: number
+    type: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SecurityLogAvgAggregateInputType = {
+    lat?: true
+    lng?: true
+  }
+
+  export type SecurityLogSumAggregateInputType = {
+    lat?: true
+    lng?: true
+  }
+
+  export type SecurityLogMinAggregateInputType = {
+    id?: true
+    rideId?: true
+    userId?: true
+    lat?: true
+    lng?: true
+    message?: true
+    type?: true
+    createdAt?: true
+  }
+
+  export type SecurityLogMaxAggregateInputType = {
+    id?: true
+    rideId?: true
+    userId?: true
+    lat?: true
+    lng?: true
+    message?: true
+    type?: true
+    createdAt?: true
+  }
+
+  export type SecurityLogCountAggregateInputType = {
+    id?: true
+    rideId?: true
+    userId?: true
+    lat?: true
+    lng?: true
+    message?: true
+    type?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SecurityLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SecurityLog to aggregate.
+     */
+    where?: SecurityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityLogs to fetch.
+     */
+    orderBy?: SecurityLogOrderByWithRelationInput | SecurityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SecurityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SecurityLogs
+    **/
+    _count?: true | SecurityLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SecurityLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SecurityLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SecurityLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SecurityLogMaxAggregateInputType
+  }
+
+  export type GetSecurityLogAggregateType<T extends SecurityLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateSecurityLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSecurityLog[P]>
+      : GetScalarType<T[P], AggregateSecurityLog[P]>
+  }
+
+
+
+
+  export type SecurityLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SecurityLogWhereInput
+    orderBy?: SecurityLogOrderByWithAggregationInput | SecurityLogOrderByWithAggregationInput[]
+    by: SecurityLogScalarFieldEnum[] | SecurityLogScalarFieldEnum
+    having?: SecurityLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SecurityLogCountAggregateInputType | true
+    _avg?: SecurityLogAvgAggregateInputType
+    _sum?: SecurityLogSumAggregateInputType
+    _min?: SecurityLogMinAggregateInputType
+    _max?: SecurityLogMaxAggregateInputType
+  }
+
+  export type SecurityLogGroupByOutputType = {
+    id: string
+    rideId: string | null
+    userId: string
+    lat: number
+    lng: number
+    message: string
+    type: string
+    createdAt: Date
+    _count: SecurityLogCountAggregateOutputType | null
+    _avg: SecurityLogAvgAggregateOutputType | null
+    _sum: SecurityLogSumAggregateOutputType | null
+    _min: SecurityLogMinAggregateOutputType | null
+    _max: SecurityLogMaxAggregateOutputType | null
+  }
+
+  type GetSecurityLogGroupByPayload<T extends SecurityLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SecurityLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SecurityLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SecurityLogGroupByOutputType[P]>
+            : GetScalarType<T[P], SecurityLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SecurityLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rideId?: boolean
+    userId?: boolean
+    lat?: boolean
+    lng?: boolean
+    message?: boolean
+    type?: boolean
+    createdAt?: boolean
+    ride?: boolean | SecurityLog$rideArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["securityLog"]>
+
+  export type SecurityLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rideId?: boolean
+    userId?: boolean
+    lat?: boolean
+    lng?: boolean
+    message?: boolean
+    type?: boolean
+    createdAt?: boolean
+    ride?: boolean | SecurityLog$rideArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["securityLog"]>
+
+  export type SecurityLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rideId?: boolean
+    userId?: boolean
+    lat?: boolean
+    lng?: boolean
+    message?: boolean
+    type?: boolean
+    createdAt?: boolean
+    ride?: boolean | SecurityLog$rideArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["securityLog"]>
+
+  export type SecurityLogSelectScalar = {
+    id?: boolean
+    rideId?: boolean
+    userId?: boolean
+    lat?: boolean
+    lng?: boolean
+    message?: boolean
+    type?: boolean
+    createdAt?: boolean
+  }
+
+  export type SecurityLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rideId" | "userId" | "lat" | "lng" | "message" | "type" | "createdAt", ExtArgs["result"]["securityLog"]>
+  export type SecurityLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ride?: boolean | SecurityLog$rideArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type SecurityLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ride?: boolean | SecurityLog$rideArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type SecurityLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ride?: boolean | SecurityLog$rideArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $SecurityLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SecurityLog"
+    objects: {
+      ride: Prisma.$RidePayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      rideId: string | null
+      userId: string
+      lat: number
+      lng: number
+      message: string
+      type: string
+      createdAt: Date
+    }, ExtArgs["result"]["securityLog"]>
+    composites: {}
+  }
+
+  type SecurityLogGetPayload<S extends boolean | null | undefined | SecurityLogDefaultArgs> = $Result.GetResult<Prisma.$SecurityLogPayload, S>
+
+  type SecurityLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SecurityLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SecurityLogCountAggregateInputType | true
+    }
+
+  export interface SecurityLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SecurityLog'], meta: { name: 'SecurityLog' } }
+    /**
+     * Find zero or one SecurityLog that matches the filter.
+     * @param {SecurityLogFindUniqueArgs} args - Arguments to find a SecurityLog
+     * @example
+     * // Get one SecurityLog
+     * const securityLog = await prisma.securityLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SecurityLogFindUniqueArgs>(args: SelectSubset<T, SecurityLogFindUniqueArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findUnique", ClientOptions> | null, null, ExtArgs, ClientOptions>
+
+    /**
+     * Find one SecurityLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SecurityLogFindUniqueOrThrowArgs} args - Arguments to find a SecurityLog
+     * @example
+     * // Get one SecurityLog
+     * const securityLog = await prisma.securityLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SecurityLogFindUniqueOrThrowArgs>(args: SelectSubset<T, SecurityLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findUniqueOrThrow", ClientOptions>, never, ExtArgs, ClientOptions>
+
+    /**
+     * Find the first SecurityLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogFindFirstArgs} args - Arguments to find a SecurityLog
+     * @example
+     * // Get one SecurityLog
+     * const securityLog = await prisma.securityLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SecurityLogFindFirstArgs>(args?: SelectSubset<T, SecurityLogFindFirstArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findFirst", ClientOptions> | null, null, ExtArgs, ClientOptions>
+
+    /**
+     * Find the first SecurityLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogFindFirstOrThrowArgs} args - Arguments to find a SecurityLog
+     * @example
+     * // Get one SecurityLog
+     * const securityLog = await prisma.securityLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SecurityLogFindFirstOrThrowArgs>(args?: SelectSubset<T, SecurityLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findFirstOrThrow", ClientOptions>, never, ExtArgs, ClientOptions>
+
+    /**
+     * Find zero or more SecurityLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SecurityLogs
+     * const securityLogs = await prisma.securityLog.findMany()
+     * 
+     * // Get first 10 SecurityLogs
+     * const securityLogs = await prisma.securityLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const securityLogWithIdOnly = await prisma.securityLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SecurityLogFindManyArgs>(args?: SelectSubset<T, SecurityLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findMany", ClientOptions>>
+
+    /**
+     * Create a SecurityLog.
+     * @param {SecurityLogCreateArgs} args - Arguments to create a SecurityLog.
+     * @example
+     * // Create one SecurityLog
+     * const SecurityLog = await prisma.securityLog.create({
+     *   data: {
+     *     // ... data to create a SecurityLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends SecurityLogCreateArgs>(args: SelectSubset<T, SecurityLogCreateArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "create", ClientOptions>, never, ExtArgs, ClientOptions>
+
+    /**
+     * Create many SecurityLogs.
+     * @param {SecurityLogCreateManyArgs} args - Arguments to create many SecurityLogs.
+     * @example
+     * // Create many SecurityLogs
+     * const securityLog = await prisma.securityLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SecurityLogCreateManyArgs>(args?: SelectSubset<T, SecurityLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SecurityLogs and returns the data saved in the database.
+     * @param {SecurityLogCreateManyAndReturnArgs} args - Arguments to create many SecurityLogs.
+     * @example
+     * // Create many SecurityLogs
+     * const securityLog = await prisma.securityLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SecurityLogs and only return the `id`
+     * const securityLogWithIdOnly = await prisma.securityLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SecurityLogCreateManyAndReturnArgs>(args?: SelectSubset<T, SecurityLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "createManyAndReturn", ClientOptions>>
+
+    /**
+     * Delete a SecurityLog.
+     * @param {SecurityLogDeleteArgs} args - Arguments to delete one SecurityLog.
+     * @example
+     * // Delete one SecurityLog
+     * const SecurityLog = await prisma.securityLog.delete({
+     *   where: {
+     *     // ... filter to delete one SecurityLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SecurityLogDeleteArgs>(args: SelectSubset<T, SecurityLogDeleteArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "delete", ClientOptions>, never, ExtArgs, ClientOptions>
+
+    /**
+     * Update one SecurityLog.
+     * @param {SecurityLogUpdateArgs} args - Arguments to update one SecurityLog.
+     * @example
+     * // Update one SecurityLog
+     * const securityLog = await prisma.securityLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SecurityLogUpdateArgs>(args: SelectSubset<T, SecurityLogUpdateArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "update", ClientOptions>, never, ExtArgs, ClientOptions>
+
+    /**
+     * Delete zero or more SecurityLogs.
+     * @param {SecurityLogDeleteManyArgs} args - Arguments to filter SecurityLogs to delete.
+     * @example
+     * // Delete a few SecurityLogs
+     * const { count } = await prisma.securityLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SecurityLogDeleteManyArgs>(args?: SelectSubset<T, SecurityLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SecurityLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SecurityLogs
+     * const securityLog = await prisma.securityLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SecurityLogUpdateManyArgs>(args: SelectSubset<T, SecurityLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SecurityLogs and returns the data updated in the database.
+     * @param {SecurityLogUpdateManyAndReturnArgs} args - Arguments to update many SecurityLogs.
+     * @example
+     * // Update many SecurityLogs
+     * const securityLog = await prisma.securityLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SecurityLogs and only return the `id`
+     * const securityLogWithIdOnly = await prisma.securityLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SecurityLogUpdateManyAndReturnArgs>(args: SelectSubset<T, SecurityLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "updateManyAndReturn", ClientOptions>>
+
+    /**
+     * Create or update one SecurityLog.
+     * @param {SecurityLogUpsertArgs} args - Arguments to update or create a SecurityLog.
+     * @example
+     * // Update or create a SecurityLog
+     * const securityLog = await prisma.securityLog.upsert({
+     *   create: {
+     *     // ... data to create a SecurityLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SecurityLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SecurityLogUpsertArgs>(args: SelectSubset<T, SecurityLogUpsertArgs<ExtArgs>>): Prisma__SecurityLogClient<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "upsert", ClientOptions>, never, ExtArgs, ClientOptions>
+
+
+    /**
+     * Count the number of SecurityLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogCountArgs} args - Arguments to filter SecurityLogs to count.
+     * @example
+     * // Count the number of SecurityLogs
+     * const count = await prisma.securityLog.count({
+     *   where: {
+     *     // ... the filter for the SecurityLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends SecurityLogCountArgs>(
+      args?: Subset<T, SecurityLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SecurityLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SecurityLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SecurityLogAggregateArgs>(args: Subset<T, SecurityLogAggregateArgs>): Prisma.PrismaPromise<GetSecurityLogAggregateType<T>>
+
+    /**
+     * Group by SecurityLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SecurityLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SecurityLogGroupByArgs['orderBy'] }
+        : { orderBy?: SecurityLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SecurityLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSecurityLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SecurityLog model
+   */
+  readonly fields: SecurityLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SecurityLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SecurityLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    ride<T extends SecurityLog$rideArgs<ExtArgs> = {}>(args?: Subset<T, SecurityLog$rideArgs<ExtArgs>>): Prisma__RideClient<$Result.GetResult<Prisma.$RidePayload<ExtArgs>, T, "findUniqueOrThrow", ClientOptions> | null, null, ExtArgs, ClientOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", ClientOptions> | Null, Null, ExtArgs, ClientOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SecurityLog model
+   */ 
+  interface SecurityLogFieldRefs {
+    readonly id: FieldRef<"SecurityLog", 'String'>
+    readonly rideId: FieldRef<"SecurityLog", 'String'>
+    readonly userId: FieldRef<"SecurityLog", 'String'>
+    readonly lat: FieldRef<"SecurityLog", 'Float'>
+    readonly lng: FieldRef<"SecurityLog", 'Float'>
+    readonly message: FieldRef<"SecurityLog", 'String'>
+    readonly type: FieldRef<"SecurityLog", 'String'>
+    readonly createdAt: FieldRef<"SecurityLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SecurityLog findUnique
+   */
+  export type SecurityLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityLog to fetch.
+     */
+    where: SecurityLogWhereUniqueInput
+  }
+
+  /**
+   * SecurityLog findUniqueOrThrow
+   */
+  export type SecurityLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityLog to fetch.
+     */
+    where: SecurityLogWhereUniqueInput
+  }
+
+  /**
+   * SecurityLog findFirst
+   */
+  export type SecurityLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityLog to fetch.
+     */
+    where?: SecurityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityLogs to fetch.
+     */
+    orderBy?: SecurityLogOrderByWithRelationInput | SecurityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SecurityLogs.
+     */
+    cursor?: SecurityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SecurityLogs.
+     */
+    distinct?: SecurityLogScalarFieldEnum | SecurityLogScalarFieldEnum[]
+  }
+
+  /**
+   * SecurityLog findFirstOrThrow
+   */
+  export type SecurityLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityLog to fetch.
+     */
+    where?: SecurityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityLogs to fetch.
+     */
+    orderBy?: SecurityLogOrderByWithRelationInput | SecurityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SecurityLogs.
+     */
+    cursor?: SecurityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SecurityLogs.
+     */
+    distinct?: SecurityLogScalarFieldEnum | SecurityLogScalarFieldEnum[]
+  }
+
+  /**
+   * SecurityLog findMany
+   */
+  export type SecurityLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityLogs to fetch.
+     */
+    where?: SecurityLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityLogs to fetch.
+     */
+    orderBy?: SecurityLogOrderByWithRelationInput | SecurityLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SecurityLogs.
+     */
+    cursor?: SecurityLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityLogs.
+     */
+    skip?: number
+    distinct?: SecurityLogScalarFieldEnum | SecurityLogScalarFieldEnum[]
+  }
+
+  /**
+   * SecurityLog create
+   */
+  export type SecurityLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SecurityLog.
+     */
+    data: XOR<SecurityLogCreateInput, SecurityLogUncheckedCreateInput>
+  }
+
+  /**
+   * SecurityLog createMany
+   */
+  export type SecurityLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SecurityLogs.
+     */
+    data: SecurityLogCreateManyInput | SecurityLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SecurityLog createManyAndReturn
+   */
+  export type SecurityLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many SecurityLogs.
+     */
+    data: SecurityLogCreateManyInput | SecurityLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SecurityLog update
+   */
+  export type SecurityLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SecurityLog.
+     */
+    data: XOR<SecurityLogUpdateInput, SecurityLogUncheckedUpdateInput>
+    /**
+     * Choose, which SecurityLog to update.
+     */
+    where: SecurityLogWhereUniqueInput
+  }
+
+  /**
+   * SecurityLog updateMany
+   */
+  export type SecurityLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SecurityLogs.
+     */
+    data: XOR<SecurityLogUpdateManyMutationInput, SecurityLogUncheckedUpdateManyInput>
+    /**
+     * Filter which SecurityLogs to update
+     */
+    where?: SecurityLogWhereInput
+  }
+
+  /**
+   * SecurityLog updateManyAndReturn
+   */
+  export type SecurityLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * The data used to update SecurityLogs.
+     */
+    data: XOR<SecurityLogUpdateManyMutationInput, SecurityLogUncheckedUpdateManyInput>
+    /**
+     * Filter which SecurityLogs to update
+     */
+    where?: SecurityLogWhereInput
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SecurityLog upsert
+   */
+  export type SecurityLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SecurityLog to update in case it exists.
+     */
+    where: SecurityLogWhereUniqueInput
+    /**
+     * In case the SecurityLog found by the `where` argument doesn't exist, create a new SecurityLog with this data.
+     */
+    create: XOR<SecurityLogCreateInput, SecurityLogUncheckedCreateInput>
+    /**
+     * In case the SecurityLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SecurityLogUpdateInput, SecurityLogUncheckedUpdateInput>
+  }
+
+  /**
+   * SecurityLog delete
+   */
+  export type SecurityLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
+    /**
+     * Filter which SecurityLog to delete.
+     */
+    where: SecurityLogWhereUniqueInput
+  }
+
+  /**
+   * SecurityLog deleteMany
+   */
+  export type SecurityLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SecurityLogs to delete
+     */
+    where?: SecurityLogWhereInput
+  }
+
+  /**
+   * SecurityLog.ride
+   */
+  export type SecurityLog$rideArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ride
+     */
+    select?: RideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ride
+     */
+    omit?: RideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RideInclude<ExtArgs> | null
+    where?: RideWhereInput
+  }
+
+  /**
+   * SecurityLog without action
+   */
+  export type SecurityLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityLog
+     */
+    select?: SecurityLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityLog
+     */
+    omit?: SecurityLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityLogInclude<ExtArgs> | null
   }
 
 
@@ -8630,7 +10023,10 @@ export namespace Prisma {
     lastLocationLat: 'lastLocationLat',
     lastLocationLng: 'lastLocationLng',
     isOnline: 'isOnline',
-    rating: 'rating'
+    rating: 'rating',
+    licenseUrl: 'licenseUrl',
+    insuranceUrl: 'insuranceUrl',
+    backgroundCheckUrl: 'backgroundCheckUrl'
   };
 
   export type DriverProfileScalarFieldEnum = (typeof DriverProfileScalarFieldEnum)[keyof typeof DriverProfileScalarFieldEnum]
@@ -8654,10 +10050,27 @@ export namespace Prisma {
     startTime: 'startTime',
     endTime: 'endTime',
     createdAt: 'createdAt',
-    rating: 'rating'
+    routeGeometry: 'routeGeometry',
+    rating: 'rating',
+    otp: 'otp',
+    otpVerified: 'otpVerified'
   };
 
   export type RideScalarFieldEnum = (typeof RideScalarFieldEnum)[keyof typeof RideScalarFieldEnum]
+
+
+  export const SecurityLogScalarFieldEnum: {
+    id: 'id',
+    rideId: 'rideId',
+    userId: 'userId',
+    lat: 'lat',
+    lng: 'lng',
+    message: 'message',
+    type: 'type',
+    createdAt: 'createdAt'
+  };
+
+  export type SecurityLogScalarFieldEnum = (typeof SecurityLogScalarFieldEnum)[keyof typeof SecurityLogScalarFieldEnum]
 
 
   export const PaymentScalarFieldEnum: {
@@ -8871,6 +10284,7 @@ export namespace Prisma {
     ridesAsDriver?: RideListRelationFilter
     reviewsSent?: ReviewListRelationFilter
     reviewsRecv?: ReviewListRelationFilter
+    securityLogs?: SecurityLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -8887,6 +10301,7 @@ export namespace Prisma {
     ridesAsDriver?: RideOrderByRelationAggregateInput
     reviewsSent?: ReviewOrderByRelationAggregateInput
     reviewsRecv?: ReviewOrderByRelationAggregateInput
+    securityLogs?: SecurityLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -8906,6 +10321,7 @@ export namespace Prisma {
     ridesAsDriver?: RideListRelationFilter
     reviewsSent?: ReviewListRelationFilter
     reviewsRecv?: ReviewListRelationFilter
+    securityLogs?: SecurityLogListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -9014,6 +10430,9 @@ export namespace Prisma {
     lastLocationLng?: FloatNullableFilter<"DriverProfile"> | number | null
     isOnline?: BoolFilter<"DriverProfile"> | boolean
     rating?: FloatFilter<"DriverProfile"> | number
+    licenseUrl?: StringNullableFilter<"DriverProfile"> | string | null
+    insuranceUrl?: StringNullableFilter<"DriverProfile"> | string | null
+    backgroundCheckUrl?: StringNullableFilter<"DriverProfile"> | string | null
     driver?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -9029,6 +10448,9 @@ export namespace Prisma {
     lastLocationLng?: SortOrderInput | SortOrder
     isOnline?: SortOrder
     rating?: SortOrder
+    licenseUrl?: SortOrderInput | SortOrder
+    insuranceUrl?: SortOrderInput | SortOrder
+    backgroundCheckUrl?: SortOrderInput | SortOrder
     driver?: UserOrderByWithRelationInput
   }
 
@@ -9047,6 +10469,9 @@ export namespace Prisma {
     lastLocationLng?: FloatNullableFilter<"DriverProfile"> | number | null
     isOnline?: BoolFilter<"DriverProfile"> | boolean
     rating?: FloatFilter<"DriverProfile"> | number
+    licenseUrl?: StringNullableFilter<"DriverProfile"> | string | null
+    insuranceUrl?: StringNullableFilter<"DriverProfile"> | string | null
+    backgroundCheckUrl?: StringNullableFilter<"DriverProfile"> | string | null
     driver?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "driverId" | "licenseNumber">
 
@@ -9062,6 +10487,9 @@ export namespace Prisma {
     lastLocationLng?: SortOrderInput | SortOrder
     isOnline?: SortOrder
     rating?: SortOrder
+    licenseUrl?: SortOrderInput | SortOrder
+    insuranceUrl?: SortOrderInput | SortOrder
+    backgroundCheckUrl?: SortOrderInput | SortOrder
     _count?: DriverProfileCountOrderByAggregateInput
     _avg?: DriverProfileAvgOrderByAggregateInput
     _max?: DriverProfileMaxOrderByAggregateInput
@@ -9084,6 +10512,9 @@ export namespace Prisma {
     lastLocationLng?: FloatNullableWithAggregatesFilter<"DriverProfile"> | number | null
     isOnline?: BoolWithAggregatesFilter<"DriverProfile"> | boolean
     rating?: FloatWithAggregatesFilter<"DriverProfile"> | number
+    licenseUrl?: StringNullableWithAggregatesFilter<"DriverProfile"> | string | null
+    insuranceUrl?: StringNullableWithAggregatesFilter<"DriverProfile"> | string | null
+    backgroundCheckUrl?: StringNullableWithAggregatesFilter<"DriverProfile"> | string | null
   }
 
   export type RideWhereInput = {
@@ -9102,16 +10533,20 @@ export namespace Prisma {
     pickupAddr?: StringNullableFilter<"Ride"> | string | null
     dropoffAddr?: StringNullableFilter<"Ride"> | string | null
     distance?: FloatNullableFilter<"Ride"> | number | null
-    price?: FloatFilter<"Ride"> | number
+    price?: FloatNullableFilter<"Ride"> | number | null
     serviceLevel?: StringNullableFilter<"Ride"> | string | null
     startTime?: DateTimeNullableFilter<"Ride"> | Date | string | null
     endTime?: DateTimeNullableFilter<"Ride"> | Date | string | null
     createdAt?: DateTimeFilter<"Ride"> | Date | string
+    routeGeometry?: StringNullableFilter<"Ride"> | string | null
     rating?: IntNullableFilter<"Ride"> | number | null
+    otp?: StringNullableFilter<"Ride"> | string | null
+    otpVerified?: BoolFilter<"Ride"> | boolean
     rider?: XOR<UserScalarRelationFilter, UserWhereInput>
     driver?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     reviews?: ReviewListRelationFilter
     payments?: PaymentListRelationFilter
+    securityLogs?: SecurityLogListRelationFilter
   }
 
   export type RideOrderByWithRelationInput = {
@@ -9127,16 +10562,20 @@ export namespace Prisma {
     pickupAddr?: SortOrderInput | SortOrder
     dropoffAddr?: SortOrderInput | SortOrder
     distance?: SortOrderInput | SortOrder
-    price?: SortOrder
+    price?: SortOrderInput | SortOrder
     serviceLevel?: SortOrderInput | SortOrder
     startTime?: SortOrderInput | SortOrder
     endTime?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    routeGeometry?: SortOrderInput | SortOrder
     rating?: SortOrderInput | SortOrder
+    otp?: SortOrderInput | SortOrder
+    otpVerified?: SortOrder
     rider?: UserOrderByWithRelationInput
     driver?: UserOrderByWithRelationInput
     reviews?: ReviewOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
+    securityLogs?: SecurityLogOrderByRelationAggregateInput
   }
 
   export type RideWhereUniqueInput = Prisma.AtLeast<{
@@ -9155,16 +10594,20 @@ export namespace Prisma {
     pickupAddr?: StringNullableFilter<"Ride"> | string | null
     dropoffAddr?: StringNullableFilter<"Ride"> | string | null
     distance?: FloatNullableFilter<"Ride"> | number | null
-    price?: FloatFilter<"Ride"> | number
+    price?: FloatNullableFilter<"Ride"> | number | null
     serviceLevel?: StringNullableFilter<"Ride"> | string | null
     startTime?: DateTimeNullableFilter<"Ride"> | Date | string | null
     endTime?: DateTimeNullableFilter<"Ride"> | Date | string | null
     createdAt?: DateTimeFilter<"Ride"> | Date | string
+    routeGeometry?: StringNullableFilter<"Ride"> | string | null
     rating?: IntNullableFilter<"Ride"> | number | null
+    otp?: StringNullableFilter<"Ride"> | string | null
+    otpVerified?: BoolFilter<"Ride"> | boolean
     rider?: XOR<UserScalarRelationFilter, UserWhereInput>
     driver?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     reviews?: ReviewListRelationFilter
     payments?: PaymentListRelationFilter
+    securityLogs?: SecurityLogListRelationFilter
   }, "id">
 
   export type RideOrderByWithAggregationInput = {
@@ -9180,12 +10623,15 @@ export namespace Prisma {
     pickupAddr?: SortOrderInput | SortOrder
     dropoffAddr?: SortOrderInput | SortOrder
     distance?: SortOrderInput | SortOrder
-    price?: SortOrder
+    price?: SortOrderInput | SortOrder
     serviceLevel?: SortOrderInput | SortOrder
     startTime?: SortOrderInput | SortOrder
     endTime?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    routeGeometry?: SortOrderInput | SortOrder
     rating?: SortOrderInput | SortOrder
+    otp?: SortOrderInput | SortOrder
+    otpVerified?: SortOrder
     _count?: RideCountOrderByAggregateInput
     _avg?: RideAvgOrderByAggregateInput
     _max?: RideMaxOrderByAggregateInput
@@ -9209,12 +10655,90 @@ export namespace Prisma {
     pickupAddr?: StringNullableWithAggregatesFilter<"Ride"> | string | null
     dropoffAddr?: StringNullableWithAggregatesFilter<"Ride"> | string | null
     distance?: FloatNullableWithAggregatesFilter<"Ride"> | number | null
-    price?: FloatWithAggregatesFilter<"Ride"> | number
+    price?: FloatNullableWithAggregatesFilter<"Ride"> | number | null
     serviceLevel?: StringNullableWithAggregatesFilter<"Ride"> | string | null
     startTime?: DateTimeNullableWithAggregatesFilter<"Ride"> | Date | string | null
     endTime?: DateTimeNullableWithAggregatesFilter<"Ride"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Ride"> | Date | string
+    routeGeometry?: StringNullableWithAggregatesFilter<"Ride"> | string | null
     rating?: IntNullableWithAggregatesFilter<"Ride"> | number | null
+    otp?: StringNullableWithAggregatesFilter<"Ride"> | string | null
+    otpVerified?: BoolWithAggregatesFilter<"Ride"> | boolean
+  }
+
+  export type SecurityLogWhereInput = {
+    AND?: SecurityLogWhereInput | SecurityLogWhereInput[]
+    OR?: SecurityLogWhereInput[]
+    NOT?: SecurityLogWhereInput | SecurityLogWhereInput[]
+    id?: StringFilter<"SecurityLog"> | string
+    rideId?: StringNullableFilter<"SecurityLog"> | string | null
+    userId?: StringFilter<"SecurityLog"> | string
+    lat?: FloatFilter<"SecurityLog"> | number
+    lng?: FloatFilter<"SecurityLog"> | number
+    message?: StringFilter<"SecurityLog"> | string
+    type?: StringFilter<"SecurityLog"> | string
+    createdAt?: DateTimeFilter<"SecurityLog"> | Date | string
+    ride?: XOR<RideNullableScalarRelationFilter, RideWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type SecurityLogOrderByWithRelationInput = {
+    id?: SortOrder
+    rideId?: SortOrderInput | SortOrder
+    userId?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    createdAt?: SortOrder
+    ride?: RideOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type SecurityLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SecurityLogWhereInput | SecurityLogWhereInput[]
+    OR?: SecurityLogWhereInput[]
+    NOT?: SecurityLogWhereInput | SecurityLogWhereInput[]
+    rideId?: StringNullableFilter<"SecurityLog"> | string | null
+    userId?: StringFilter<"SecurityLog"> | string
+    lat?: FloatFilter<"SecurityLog"> | number
+    lng?: FloatFilter<"SecurityLog"> | number
+    message?: StringFilter<"SecurityLog"> | string
+    type?: StringFilter<"SecurityLog"> | string
+    createdAt?: DateTimeFilter<"SecurityLog"> | Date | string
+    ride?: XOR<RideNullableScalarRelationFilter, RideWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type SecurityLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    rideId?: SortOrderInput | SortOrder
+    userId?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    createdAt?: SortOrder
+    _count?: SecurityLogCountOrderByAggregateInput
+    _avg?: SecurityLogAvgOrderByAggregateInput
+    _max?: SecurityLogMaxOrderByAggregateInput
+    _min?: SecurityLogMinOrderByAggregateInput
+    _sum?: SecurityLogSumOrderByAggregateInput
+  }
+
+  export type SecurityLogScalarWhereWithAggregatesInput = {
+    AND?: SecurityLogScalarWhereWithAggregatesInput | SecurityLogScalarWhereWithAggregatesInput[]
+    OR?: SecurityLogScalarWhereWithAggregatesInput[]
+    NOT?: SecurityLogScalarWhereWithAggregatesInput | SecurityLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SecurityLog"> | string
+    rideId?: StringNullableWithAggregatesFilter<"SecurityLog"> | string | null
+    userId?: StringWithAggregatesFilter<"SecurityLog"> | string
+    lat?: FloatWithAggregatesFilter<"SecurityLog"> | number
+    lng?: FloatWithAggregatesFilter<"SecurityLog"> | number
+    message?: StringWithAggregatesFilter<"SecurityLog"> | string
+    type?: StringWithAggregatesFilter<"SecurityLog"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SecurityLog"> | Date | string
   }
 
   export type PaymentWhereInput = {
@@ -9386,6 +10910,7 @@ export namespace Prisma {
     ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -9402,6 +10927,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -9418,6 +10944,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -9434,6 +10961,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -9546,6 +11074,9 @@ export namespace Prisma {
     lastLocationLng?: number | null
     isOnline?: boolean
     rating?: number
+    licenseUrl?: string | null
+    insuranceUrl?: string | null
+    backgroundCheckUrl?: string | null
     driver: UserCreateNestedOneWithoutDriverProfileInput
   }
 
@@ -9561,6 +11092,9 @@ export namespace Prisma {
     lastLocationLng?: number | null
     isOnline?: boolean
     rating?: number
+    licenseUrl?: string | null
+    insuranceUrl?: string | null
+    backgroundCheckUrl?: string | null
   }
 
   export type DriverProfileUpdateInput = {
@@ -9574,6 +11108,9 @@ export namespace Prisma {
     lastLocationLng?: NullableFloatFieldUpdateOperationsInput | number | null
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     rating?: FloatFieldUpdateOperationsInput | number
+    licenseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    backgroundCheckUrl?: NullableStringFieldUpdateOperationsInput | string | null
     driver?: UserUpdateOneRequiredWithoutDriverProfileNestedInput
   }
 
@@ -9589,6 +11126,9 @@ export namespace Prisma {
     lastLocationLng?: NullableFloatFieldUpdateOperationsInput | number | null
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     rating?: FloatFieldUpdateOperationsInput | number
+    licenseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    backgroundCheckUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DriverProfileCreateManyInput = {
@@ -9603,6 +11143,9 @@ export namespace Prisma {
     lastLocationLng?: number | null
     isOnline?: boolean
     rating?: number
+    licenseUrl?: string | null
+    insuranceUrl?: string | null
+    backgroundCheckUrl?: string | null
   }
 
   export type DriverProfileUpdateManyMutationInput = {
@@ -9616,6 +11159,9 @@ export namespace Prisma {
     lastLocationLng?: NullableFloatFieldUpdateOperationsInput | number | null
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     rating?: FloatFieldUpdateOperationsInput | number
+    licenseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    backgroundCheckUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DriverProfileUncheckedUpdateManyInput = {
@@ -9630,6 +11176,9 @@ export namespace Prisma {
     lastLocationLng?: NullableFloatFieldUpdateOperationsInput | number | null
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     rating?: FloatFieldUpdateOperationsInput | number
+    licenseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    backgroundCheckUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RideCreateInput = {
@@ -9643,16 +11192,20 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     rider: UserCreateNestedOneWithoutRidesAsRiderInput
     driver?: UserCreateNestedOneWithoutRidesAsDriverInput
     reviews?: ReviewCreateNestedManyWithoutRideInput
     payments?: PaymentCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutRideInput
   }
 
   export type RideUncheckedCreateInput = {
@@ -9668,14 +11221,18 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     reviews?: ReviewUncheckedCreateNestedManyWithoutRideInput
     payments?: PaymentUncheckedCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutRideInput
   }
 
   export type RideUpdateInput = {
@@ -9689,16 +11246,20 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     rider?: UserUpdateOneRequiredWithoutRidesAsRiderNestedInput
     driver?: UserUpdateOneWithoutRidesAsDriverNestedInput
     reviews?: ReviewUpdateManyWithoutRideNestedInput
     payments?: PaymentUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateInput = {
@@ -9714,14 +11275,18 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     reviews?: ReviewUncheckedUpdateManyWithoutRideNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutRideNestedInput
   }
 
   export type RideCreateManyInput = {
@@ -9737,12 +11302,15 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
   }
 
   export type RideUpdateManyMutationInput = {
@@ -9756,12 +11324,15 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type RideUncheckedUpdateManyInput = {
@@ -9777,12 +11348,90 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type SecurityLogCreateInput = {
+    id?: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+    ride?: RideCreateNestedOneWithoutSecurityLogsInput
+    user: UserCreateNestedOneWithoutSecurityLogsInput
+  }
+
+  export type SecurityLogUncheckedCreateInput = {
+    id?: string
+    rideId?: string | null
+    userId: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+  }
+
+  export type SecurityLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ride?: RideUpdateOneWithoutSecurityLogsNestedInput
+    user?: UserUpdateOneRequiredWithoutSecurityLogsNestedInput
+  }
+
+  export type SecurityLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rideId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityLogCreateManyInput = {
+    id?: string
+    rideId?: string | null
+    userId: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+  }
+
+  export type SecurityLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rideId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PaymentCreateInput = {
@@ -9998,6 +11647,12 @@ export namespace Prisma {
     none?: ReviewWhereInput
   }
 
+  export type SecurityLogListRelationFilter = {
+    every?: SecurityLogWhereInput
+    some?: SecurityLogWhereInput
+    none?: SecurityLogWhereInput
+  }
+
   export type VehicleOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -10007,6 +11662,10 @@ export namespace Prisma {
   }
 
   export type ReviewOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SecurityLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -10237,6 +11896,9 @@ export namespace Prisma {
     lastLocationLng?: SortOrder
     isOnline?: SortOrder
     rating?: SortOrder
+    licenseUrl?: SortOrder
+    insuranceUrl?: SortOrder
+    backgroundCheckUrl?: SortOrder
   }
 
   export type DriverProfileAvgOrderByAggregateInput = {
@@ -10257,6 +11919,9 @@ export namespace Prisma {
     lastLocationLng?: SortOrder
     isOnline?: SortOrder
     rating?: SortOrder
+    licenseUrl?: SortOrder
+    insuranceUrl?: SortOrder
+    backgroundCheckUrl?: SortOrder
   }
 
   export type DriverProfileMinOrderByAggregateInput = {
@@ -10270,6 +11935,9 @@ export namespace Prisma {
     lastLocationLng?: SortOrder
     isOnline?: SortOrder
     rating?: SortOrder
+    licenseUrl?: SortOrder
+    insuranceUrl?: SortOrder
+    backgroundCheckUrl?: SortOrder
   }
 
   export type DriverProfileSumOrderByAggregateInput = {
@@ -10414,7 +12082,10 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     createdAt?: SortOrder
+    routeGeometry?: SortOrder
     rating?: SortOrder
+    otp?: SortOrder
+    otpVerified?: SortOrder
   }
 
   export type RideAvgOrderByAggregateInput = {
@@ -10445,7 +12116,10 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     createdAt?: SortOrder
+    routeGeometry?: SortOrder
     rating?: SortOrder
+    otp?: SortOrder
+    otpVerified?: SortOrder
   }
 
   export type RideMinOrderByAggregateInput = {
@@ -10466,7 +12140,10 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     createdAt?: SortOrder
+    routeGeometry?: SortOrder
     rating?: SortOrder
+    otp?: SortOrder
+    otpVerified?: SortOrder
   }
 
   export type RideSumOrderByAggregateInput = {
@@ -10527,6 +12204,54 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type RideNullableScalarRelationFilter = {
+    is?: RideWhereInput | null
+    isNot?: RideWhereInput | null
+  }
+
+  export type SecurityLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    rideId?: SortOrder
+    userId?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SecurityLogAvgOrderByAggregateInput = {
+    lat?: SortOrder
+    lng?: SortOrder
+  }
+
+  export type SecurityLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    rideId?: SortOrder
+    userId?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SecurityLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    rideId?: SortOrder
+    userId?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    message?: SortOrder
+    type?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SecurityLogSumOrderByAggregateInput = {
+    lat?: SortOrder
+    lng?: SortOrder
   }
 
   export type RideScalarRelationFilter = {
@@ -10660,6 +12385,13 @@ export namespace Prisma {
     connect?: ReviewWhereUniqueInput | ReviewWhereUniqueInput[]
   }
 
+  export type SecurityLogCreateNestedManyWithoutUserInput = {
+    create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
+    createMany?: SecurityLogCreateManyUserInputEnvelope
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+  }
+
   export type VehicleUncheckedCreateNestedManyWithoutOwnerInput = {
     create?: XOR<VehicleCreateWithoutOwnerInput, VehicleUncheckedCreateWithoutOwnerInput> | VehicleCreateWithoutOwnerInput[] | VehicleUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: VehicleCreateOrConnectWithoutOwnerInput | VehicleCreateOrConnectWithoutOwnerInput[]
@@ -10699,6 +12431,13 @@ export namespace Prisma {
     connectOrCreate?: ReviewCreateOrConnectWithoutToUserInput | ReviewCreateOrConnectWithoutToUserInput[]
     createMany?: ReviewCreateManyToUserInputEnvelope
     connect?: ReviewWhereUniqueInput | ReviewWhereUniqueInput[]
+  }
+
+  export type SecurityLogUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
+    createMany?: SecurityLogCreateManyUserInputEnvelope
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -10793,6 +12532,20 @@ export namespace Prisma {
     deleteMany?: ReviewScalarWhereInput | ReviewScalarWhereInput[]
   }
 
+  export type SecurityLogUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
+    upsert?: SecurityLogUpsertWithWhereUniqueWithoutUserInput | SecurityLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SecurityLogCreateManyUserInputEnvelope
+    set?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    disconnect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    delete?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    update?: SecurityLogUpdateWithWhereUniqueWithoutUserInput | SecurityLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SecurityLogUpdateManyWithWhereWithoutUserInput | SecurityLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
+  }
+
   export type VehicleUncheckedUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<VehicleCreateWithoutOwnerInput, VehicleUncheckedCreateWithoutOwnerInput> | VehicleCreateWithoutOwnerInput[] | VehicleUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: VehicleCreateOrConnectWithoutOwnerInput | VehicleCreateOrConnectWithoutOwnerInput[]
@@ -10871,6 +12624,20 @@ export namespace Prisma {
     update?: ReviewUpdateWithWhereUniqueWithoutToUserInput | ReviewUpdateWithWhereUniqueWithoutToUserInput[]
     updateMany?: ReviewUpdateManyWithWhereWithoutToUserInput | ReviewUpdateManyWithWhereWithoutToUserInput[]
     deleteMany?: ReviewScalarWhereInput | ReviewScalarWhereInput[]
+  }
+
+  export type SecurityLogUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
+    upsert?: SecurityLogUpsertWithWhereUniqueWithoutUserInput | SecurityLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SecurityLogCreateManyUserInputEnvelope
+    set?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    disconnect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    delete?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    update?: SecurityLogUpdateWithWhereUniqueWithoutUserInput | SecurityLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SecurityLogUpdateManyWithWhereWithoutUserInput | SecurityLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutVehiclesInput = {
@@ -10976,6 +12743,13 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
+  export type SecurityLogCreateNestedManyWithoutRideInput = {
+    create?: XOR<SecurityLogCreateWithoutRideInput, SecurityLogUncheckedCreateWithoutRideInput> | SecurityLogCreateWithoutRideInput[] | SecurityLogUncheckedCreateWithoutRideInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutRideInput | SecurityLogCreateOrConnectWithoutRideInput[]
+    createMany?: SecurityLogCreateManyRideInputEnvelope
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+  }
+
   export type ReviewUncheckedCreateNestedManyWithoutRideInput = {
     create?: XOR<ReviewCreateWithoutRideInput, ReviewUncheckedCreateWithoutRideInput> | ReviewCreateWithoutRideInput[] | ReviewUncheckedCreateWithoutRideInput[]
     connectOrCreate?: ReviewCreateOrConnectWithoutRideInput | ReviewCreateOrConnectWithoutRideInput[]
@@ -10988,6 +12762,13 @@ export namespace Prisma {
     connectOrCreate?: PaymentCreateOrConnectWithoutRideInput | PaymentCreateOrConnectWithoutRideInput[]
     createMany?: PaymentCreateManyRideInputEnvelope
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
+  export type SecurityLogUncheckedCreateNestedManyWithoutRideInput = {
+    create?: XOR<SecurityLogCreateWithoutRideInput, SecurityLogUncheckedCreateWithoutRideInput> | SecurityLogCreateWithoutRideInput[] | SecurityLogUncheckedCreateWithoutRideInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutRideInput | SecurityLogCreateOrConnectWithoutRideInput[]
+    createMany?: SecurityLogCreateManyRideInputEnvelope
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
   }
 
   export type EnumRideTypeFieldUpdateOperationsInput = {
@@ -11056,6 +12837,20 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
+  export type SecurityLogUpdateManyWithoutRideNestedInput = {
+    create?: XOR<SecurityLogCreateWithoutRideInput, SecurityLogUncheckedCreateWithoutRideInput> | SecurityLogCreateWithoutRideInput[] | SecurityLogUncheckedCreateWithoutRideInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutRideInput | SecurityLogCreateOrConnectWithoutRideInput[]
+    upsert?: SecurityLogUpsertWithWhereUniqueWithoutRideInput | SecurityLogUpsertWithWhereUniqueWithoutRideInput[]
+    createMany?: SecurityLogCreateManyRideInputEnvelope
+    set?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    disconnect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    delete?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    update?: SecurityLogUpdateWithWhereUniqueWithoutRideInput | SecurityLogUpdateWithWhereUniqueWithoutRideInput[]
+    updateMany?: SecurityLogUpdateManyWithWhereWithoutRideInput | SecurityLogUpdateManyWithWhereWithoutRideInput[]
+    deleteMany?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
+  }
+
   export type ReviewUncheckedUpdateManyWithoutRideNestedInput = {
     create?: XOR<ReviewCreateWithoutRideInput, ReviewUncheckedCreateWithoutRideInput> | ReviewCreateWithoutRideInput[] | ReviewUncheckedCreateWithoutRideInput[]
     connectOrCreate?: ReviewCreateOrConnectWithoutRideInput | ReviewCreateOrConnectWithoutRideInput[]
@@ -11082,6 +12877,50 @@ export namespace Prisma {
     update?: PaymentUpdateWithWhereUniqueWithoutRideInput | PaymentUpdateWithWhereUniqueWithoutRideInput[]
     updateMany?: PaymentUpdateManyWithWhereWithoutRideInput | PaymentUpdateManyWithWhereWithoutRideInput[]
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
+  export type SecurityLogUncheckedUpdateManyWithoutRideNestedInput = {
+    create?: XOR<SecurityLogCreateWithoutRideInput, SecurityLogUncheckedCreateWithoutRideInput> | SecurityLogCreateWithoutRideInput[] | SecurityLogUncheckedCreateWithoutRideInput[]
+    connectOrCreate?: SecurityLogCreateOrConnectWithoutRideInput | SecurityLogCreateOrConnectWithoutRideInput[]
+    upsert?: SecurityLogUpsertWithWhereUniqueWithoutRideInput | SecurityLogUpsertWithWhereUniqueWithoutRideInput[]
+    createMany?: SecurityLogCreateManyRideInputEnvelope
+    set?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    disconnect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    delete?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+    update?: SecurityLogUpdateWithWhereUniqueWithoutRideInput | SecurityLogUpdateWithWhereUniqueWithoutRideInput[]
+    updateMany?: SecurityLogUpdateManyWithWhereWithoutRideInput | SecurityLogUpdateManyWithWhereWithoutRideInput[]
+    deleteMany?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
+  }
+
+  export type RideCreateNestedOneWithoutSecurityLogsInput = {
+    create?: XOR<RideCreateWithoutSecurityLogsInput, RideUncheckedCreateWithoutSecurityLogsInput>
+    connectOrCreate?: RideCreateOrConnectWithoutSecurityLogsInput
+    connect?: RideWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutSecurityLogsInput = {
+    create?: XOR<UserCreateWithoutSecurityLogsInput, UserUncheckedCreateWithoutSecurityLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecurityLogsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type RideUpdateOneWithoutSecurityLogsNestedInput = {
+    create?: XOR<RideCreateWithoutSecurityLogsInput, RideUncheckedCreateWithoutSecurityLogsInput>
+    connectOrCreate?: RideCreateOrConnectWithoutSecurityLogsInput
+    upsert?: RideUpsertWithoutSecurityLogsInput
+    disconnect?: RideWhereInput | boolean
+    delete?: RideWhereInput | boolean
+    connect?: RideWhereUniqueInput
+    update?: XOR<XOR<RideUpdateToOneWithWhereWithoutSecurityLogsInput, RideUpdateWithoutSecurityLogsInput>, RideUncheckedUpdateWithoutSecurityLogsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutSecurityLogsNestedInput = {
+    create?: XOR<UserCreateWithoutSecurityLogsInput, UserUncheckedCreateWithoutSecurityLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecurityLogsInput
+    upsert?: UserUpsertWithoutSecurityLogsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSecurityLogsInput, UserUpdateWithoutSecurityLogsInput>, UserUncheckedUpdateWithoutSecurityLogsInput>
   }
 
   export type RideCreateNestedOneWithoutPaymentsInput = {
@@ -11497,6 +13336,9 @@ export namespace Prisma {
     lastLocationLng?: number | null
     isOnline?: boolean
     rating?: number
+    licenseUrl?: string | null
+    insuranceUrl?: string | null
+    backgroundCheckUrl?: string | null
   }
 
   export type DriverProfileUncheckedCreateWithoutDriverInput = {
@@ -11510,6 +13352,9 @@ export namespace Prisma {
     lastLocationLng?: number | null
     isOnline?: boolean
     rating?: number
+    licenseUrl?: string | null
+    insuranceUrl?: string | null
+    backgroundCheckUrl?: string | null
   }
 
   export type DriverProfileCreateOrConnectWithoutDriverInput = {
@@ -11528,15 +13373,19 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     driver?: UserCreateNestedOneWithoutRidesAsDriverInput
     reviews?: ReviewCreateNestedManyWithoutRideInput
     payments?: PaymentCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutRideInput
   }
 
   export type RideUncheckedCreateWithoutRiderInput = {
@@ -11551,14 +13400,18 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     reviews?: ReviewUncheckedCreateNestedManyWithoutRideInput
     payments?: PaymentUncheckedCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutRideInput
   }
 
   export type RideCreateOrConnectWithoutRiderInput = {
@@ -11582,15 +13435,19 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     rider: UserCreateNestedOneWithoutRidesAsRiderInput
     reviews?: ReviewCreateNestedManyWithoutRideInput
     payments?: PaymentCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutRideInput
   }
 
   export type RideUncheckedCreateWithoutDriverInput = {
@@ -11605,14 +13462,18 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     reviews?: ReviewUncheckedCreateNestedManyWithoutRideInput
     payments?: PaymentUncheckedCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutRideInput
   }
 
   export type RideCreateOrConnectWithoutDriverInput = {
@@ -11681,6 +13542,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SecurityLogCreateWithoutUserInput = {
+    id?: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+    ride?: RideCreateNestedOneWithoutSecurityLogsInput
+  }
+
+  export type SecurityLogUncheckedCreateWithoutUserInput = {
+    id?: string
+    rideId?: string | null
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+  }
+
+  export type SecurityLogCreateOrConnectWithoutUserInput = {
+    where: SecurityLogWhereUniqueInput
+    create: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type SecurityLogCreateManyUserInputEnvelope = {
+    data: SecurityLogCreateManyUserInput | SecurityLogCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type VehicleUpsertWithWhereUniqueWithoutOwnerInput = {
     where: VehicleWhereUniqueInput
     update: XOR<VehicleUpdateWithoutOwnerInput, VehicleUncheckedUpdateWithoutOwnerInput>
@@ -11732,6 +13623,9 @@ export namespace Prisma {
     lastLocationLng?: NullableFloatFieldUpdateOperationsInput | number | null
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     rating?: FloatFieldUpdateOperationsInput | number
+    licenseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    backgroundCheckUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DriverProfileUncheckedUpdateWithoutDriverInput = {
@@ -11745,6 +13639,9 @@ export namespace Prisma {
     lastLocationLng?: NullableFloatFieldUpdateOperationsInput | number | null
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     rating?: FloatFieldUpdateOperationsInput | number
+    licenseUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    insuranceUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    backgroundCheckUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RideUpsertWithWhereUniqueWithoutRiderInput = {
@@ -11779,12 +13676,15 @@ export namespace Prisma {
     pickupAddr?: StringNullableFilter<"Ride"> | string | null
     dropoffAddr?: StringNullableFilter<"Ride"> | string | null
     distance?: FloatNullableFilter<"Ride"> | number | null
-    price?: FloatFilter<"Ride"> | number
+    price?: FloatNullableFilter<"Ride"> | number | null
     serviceLevel?: StringNullableFilter<"Ride"> | string | null
     startTime?: DateTimeNullableFilter<"Ride"> | Date | string | null
     endTime?: DateTimeNullableFilter<"Ride"> | Date | string | null
     createdAt?: DateTimeFilter<"Ride"> | Date | string
+    routeGeometry?: StringNullableFilter<"Ride"> | string | null
     rating?: IntNullableFilter<"Ride"> | number | null
+    otp?: StringNullableFilter<"Ride"> | string | null
+    otpVerified?: BoolFilter<"Ride"> | boolean
   }
 
   export type RideUpsertWithWhereUniqueWithoutDriverInput = {
@@ -11848,6 +13748,36 @@ export namespace Prisma {
     data: XOR<ReviewUpdateManyMutationInput, ReviewUncheckedUpdateManyWithoutToUserInput>
   }
 
+  export type SecurityLogUpsertWithWhereUniqueWithoutUserInput = {
+    where: SecurityLogWhereUniqueInput
+    update: XOR<SecurityLogUpdateWithoutUserInput, SecurityLogUncheckedUpdateWithoutUserInput>
+    create: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type SecurityLogUpdateWithWhereUniqueWithoutUserInput = {
+    where: SecurityLogWhereUniqueInput
+    data: XOR<SecurityLogUpdateWithoutUserInput, SecurityLogUncheckedUpdateWithoutUserInput>
+  }
+
+  export type SecurityLogUpdateManyWithWhereWithoutUserInput = {
+    where: SecurityLogScalarWhereInput
+    data: XOR<SecurityLogUpdateManyMutationInput, SecurityLogUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type SecurityLogScalarWhereInput = {
+    AND?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
+    OR?: SecurityLogScalarWhereInput[]
+    NOT?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
+    id?: StringFilter<"SecurityLog"> | string
+    rideId?: StringNullableFilter<"SecurityLog"> | string | null
+    userId?: StringFilter<"SecurityLog"> | string
+    lat?: FloatFilter<"SecurityLog"> | number
+    lng?: FloatFilter<"SecurityLog"> | number
+    message?: StringFilter<"SecurityLog"> | string
+    type?: StringFilter<"SecurityLog"> | string
+    createdAt?: DateTimeFilter<"SecurityLog"> | Date | string
+  }
+
   export type UserCreateWithoutVehiclesInput = {
     id?: string
     email: string
@@ -11861,6 +13791,7 @@ export namespace Prisma {
     ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutVehiclesInput = {
@@ -11876,6 +13807,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutVehiclesInput = {
@@ -11907,6 +13839,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVehiclesInput = {
@@ -11922,6 +13855,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDriverProfileInput = {
@@ -11937,6 +13871,7 @@ export namespace Prisma {
     ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDriverProfileInput = {
@@ -11952,6 +13887,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDriverProfileInput = {
@@ -11983,6 +13919,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDriverProfileInput = {
@@ -11998,6 +13935,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutRidesAsRiderInput = {
@@ -12013,6 +13951,7 @@ export namespace Prisma {
     ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRidesAsRiderInput = {
@@ -12028,6 +13967,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRidesAsRiderInput = {
@@ -12048,6 +13988,7 @@ export namespace Prisma {
     ridesAsRider?: RideCreateNestedManyWithoutRiderInput
     reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRidesAsDriverInput = {
@@ -12063,6 +14004,7 @@ export namespace Prisma {
     ridesAsRider?: RideUncheckedCreateNestedManyWithoutRiderInput
     reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
     reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRidesAsDriverInput = {
@@ -12132,6 +14074,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SecurityLogCreateWithoutRideInput = {
+    id?: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutSecurityLogsInput
+  }
+
+  export type SecurityLogUncheckedCreateWithoutRideInput = {
+    id?: string
+    userId: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
+  }
+
+  export type SecurityLogCreateOrConnectWithoutRideInput = {
+    where: SecurityLogWhereUniqueInput
+    create: XOR<SecurityLogCreateWithoutRideInput, SecurityLogUncheckedCreateWithoutRideInput>
+  }
+
+  export type SecurityLogCreateManyRideInputEnvelope = {
+    data: SecurityLogCreateManyRideInput | SecurityLogCreateManyRideInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutRidesAsRiderInput = {
     update: XOR<UserUpdateWithoutRidesAsRiderInput, UserUncheckedUpdateWithoutRidesAsRiderInput>
     create: XOR<UserCreateWithoutRidesAsRiderInput, UserUncheckedCreateWithoutRidesAsRiderInput>
@@ -12156,6 +14128,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRidesAsRiderInput = {
@@ -12171,6 +14144,7 @@ export namespace Prisma {
     ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutRidesAsDriverInput = {
@@ -12197,6 +14171,7 @@ export namespace Prisma {
     ridesAsRider?: RideUpdateManyWithoutRiderNestedInput
     reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRidesAsDriverInput = {
@@ -12212,6 +14187,7 @@ export namespace Prisma {
     ridesAsRider?: RideUncheckedUpdateManyWithoutRiderNestedInput
     reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
     reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ReviewUpsertWithWhereUniqueWithoutRideInput = {
@@ -12262,6 +14238,222 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
   }
 
+  export type SecurityLogUpsertWithWhereUniqueWithoutRideInput = {
+    where: SecurityLogWhereUniqueInput
+    update: XOR<SecurityLogUpdateWithoutRideInput, SecurityLogUncheckedUpdateWithoutRideInput>
+    create: XOR<SecurityLogCreateWithoutRideInput, SecurityLogUncheckedCreateWithoutRideInput>
+  }
+
+  export type SecurityLogUpdateWithWhereUniqueWithoutRideInput = {
+    where: SecurityLogWhereUniqueInput
+    data: XOR<SecurityLogUpdateWithoutRideInput, SecurityLogUncheckedUpdateWithoutRideInput>
+  }
+
+  export type SecurityLogUpdateManyWithWhereWithoutRideInput = {
+    where: SecurityLogScalarWhereInput
+    data: XOR<SecurityLogUpdateManyMutationInput, SecurityLogUncheckedUpdateManyWithoutRideInput>
+  }
+
+  export type RideCreateWithoutSecurityLogsInput = {
+    id?: string
+    type: $Enums.RideType
+    status?: $Enums.RideStatus
+    pickupLat: number
+    pickupLng: number
+    dropoffLat: number
+    dropoffLng: number
+    pickupAddr?: string | null
+    dropoffAddr?: string | null
+    distance?: number | null
+    price?: number | null
+    serviceLevel?: string | null
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    createdAt?: Date | string
+    routeGeometry?: string | null
+    rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
+    rider: UserCreateNestedOneWithoutRidesAsRiderInput
+    driver?: UserCreateNestedOneWithoutRidesAsDriverInput
+    reviews?: ReviewCreateNestedManyWithoutRideInput
+    payments?: PaymentCreateNestedManyWithoutRideInput
+  }
+
+  export type RideUncheckedCreateWithoutSecurityLogsInput = {
+    id?: string
+    riderId: string
+    driverId?: string | null
+    type: $Enums.RideType
+    status?: $Enums.RideStatus
+    pickupLat: number
+    pickupLng: number
+    dropoffLat: number
+    dropoffLng: number
+    pickupAddr?: string | null
+    dropoffAddr?: string | null
+    distance?: number | null
+    price?: number | null
+    serviceLevel?: string | null
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    createdAt?: Date | string
+    routeGeometry?: string | null
+    rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
+    reviews?: ReviewUncheckedCreateNestedManyWithoutRideInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutRideInput
+  }
+
+  export type RideCreateOrConnectWithoutSecurityLogsInput = {
+    where: RideWhereUniqueInput
+    create: XOR<RideCreateWithoutSecurityLogsInput, RideUncheckedCreateWithoutSecurityLogsInput>
+  }
+
+  export type UserCreateWithoutSecurityLogsInput = {
+    id?: string
+    email: string
+    password: string
+    name: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    vehicles?: VehicleCreateNestedManyWithoutOwnerInput
+    driverProfile?: DriverProfileCreateNestedOneWithoutDriverInput
+    ridesAsRider?: RideCreateNestedManyWithoutRiderInput
+    ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
+    reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserUncheckedCreateWithoutSecurityLogsInput = {
+    id?: string
+    email: string
+    password: string
+    name: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutOwnerInput
+    driverProfile?: DriverProfileUncheckedCreateNestedOneWithoutDriverInput
+    ridesAsRider?: RideUncheckedCreateNestedManyWithoutRiderInput
+    ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
+    reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserCreateOrConnectWithoutSecurityLogsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSecurityLogsInput, UserUncheckedCreateWithoutSecurityLogsInput>
+  }
+
+  export type RideUpsertWithoutSecurityLogsInput = {
+    update: XOR<RideUpdateWithoutSecurityLogsInput, RideUncheckedUpdateWithoutSecurityLogsInput>
+    create: XOR<RideCreateWithoutSecurityLogsInput, RideUncheckedCreateWithoutSecurityLogsInput>
+    where?: RideWhereInput
+  }
+
+  export type RideUpdateToOneWithWhereWithoutSecurityLogsInput = {
+    where?: RideWhereInput
+    data: XOR<RideUpdateWithoutSecurityLogsInput, RideUncheckedUpdateWithoutSecurityLogsInput>
+  }
+
+  export type RideUpdateWithoutSecurityLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumRideTypeFieldUpdateOperationsInput | $Enums.RideType
+    status?: EnumRideStatusFieldUpdateOperationsInput | $Enums.RideStatus
+    pickupLat?: FloatFieldUpdateOperationsInput | number
+    pickupLng?: FloatFieldUpdateOperationsInput | number
+    dropoffLat?: FloatFieldUpdateOperationsInput | number
+    dropoffLng?: FloatFieldUpdateOperationsInput | number
+    pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
+    dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
+    distance?: NullableFloatFieldUpdateOperationsInput | number | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
+    rider?: UserUpdateOneRequiredWithoutRidesAsRiderNestedInput
+    driver?: UserUpdateOneWithoutRidesAsDriverNestedInput
+    reviews?: ReviewUpdateManyWithoutRideNestedInput
+    payments?: PaymentUpdateManyWithoutRideNestedInput
+  }
+
+  export type RideUncheckedUpdateWithoutSecurityLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    riderId?: StringFieldUpdateOperationsInput | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: EnumRideTypeFieldUpdateOperationsInput | $Enums.RideType
+    status?: EnumRideStatusFieldUpdateOperationsInput | $Enums.RideStatus
+    pickupLat?: FloatFieldUpdateOperationsInput | number
+    pickupLng?: FloatFieldUpdateOperationsInput | number
+    dropoffLat?: FloatFieldUpdateOperationsInput | number
+    dropoffLng?: FloatFieldUpdateOperationsInput | number
+    pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
+    dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
+    distance?: NullableFloatFieldUpdateOperationsInput | number | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
+    rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
+    reviews?: ReviewUncheckedUpdateManyWithoutRideNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutRideNestedInput
+  }
+
+  export type UserUpsertWithoutSecurityLogsInput = {
+    update: XOR<UserUpdateWithoutSecurityLogsInput, UserUncheckedUpdateWithoutSecurityLogsInput>
+    create: XOR<UserCreateWithoutSecurityLogsInput, UserUncheckedCreateWithoutSecurityLogsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSecurityLogsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSecurityLogsInput, UserUncheckedUpdateWithoutSecurityLogsInput>
+  }
+
+  export type UserUpdateWithoutSecurityLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    vehicles?: VehicleUpdateManyWithoutOwnerNestedInput
+    driverProfile?: DriverProfileUpdateOneWithoutDriverNestedInput
+    ridesAsRider?: RideUpdateManyWithoutRiderNestedInput
+    ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
+    reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSecurityLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    vehicles?: VehicleUncheckedUpdateManyWithoutOwnerNestedInput
+    driverProfile?: DriverProfileUncheckedUpdateOneWithoutDriverNestedInput
+    ridesAsRider?: RideUncheckedUpdateManyWithoutRiderNestedInput
+    ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
+    reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+  }
+
   export type RideCreateWithoutPaymentsInput = {
     id?: string
     type: $Enums.RideType
@@ -12273,15 +14465,19 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     rider: UserCreateNestedOneWithoutRidesAsRiderInput
     driver?: UserCreateNestedOneWithoutRidesAsDriverInput
     reviews?: ReviewCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutRideInput
   }
 
   export type RideUncheckedCreateWithoutPaymentsInput = {
@@ -12297,13 +14493,17 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     reviews?: ReviewUncheckedCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutRideInput
   }
 
   export type RideCreateOrConnectWithoutPaymentsInput = {
@@ -12333,15 +14533,19 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     rider?: UserUpdateOneRequiredWithoutRidesAsRiderNestedInput
     driver?: UserUpdateOneWithoutRidesAsDriverNestedInput
     reviews?: ReviewUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateWithoutPaymentsInput = {
@@ -12357,13 +14561,17 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     reviews?: ReviewUncheckedUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutRideNestedInput
   }
 
   export type RideCreateWithoutReviewsInput = {
@@ -12377,15 +14585,19 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     rider: UserCreateNestedOneWithoutRidesAsRiderInput
     driver?: UserCreateNestedOneWithoutRidesAsDriverInput
     payments?: PaymentCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutRideInput
   }
 
   export type RideUncheckedCreateWithoutReviewsInput = {
@@ -12401,13 +14613,17 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
     payments?: PaymentUncheckedCreateNestedManyWithoutRideInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutRideInput
   }
 
   export type RideCreateOrConnectWithoutReviewsInput = {
@@ -12428,6 +14644,7 @@ export namespace Prisma {
     ridesAsRider?: RideCreateNestedManyWithoutRiderInput
     ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
     reviewsRecv?: ReviewCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewsSentInput = {
@@ -12443,6 +14660,7 @@ export namespace Prisma {
     ridesAsRider?: RideUncheckedCreateNestedManyWithoutRiderInput
     ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
     reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutToUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewsSentInput = {
@@ -12463,6 +14681,7 @@ export namespace Prisma {
     ridesAsRider?: RideCreateNestedManyWithoutRiderInput
     ridesAsDriver?: RideCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewCreateNestedManyWithoutFromUserInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewsRecvInput = {
@@ -12478,6 +14697,7 @@ export namespace Prisma {
     ridesAsRider?: RideUncheckedCreateNestedManyWithoutRiderInput
     ridesAsDriver?: RideUncheckedCreateNestedManyWithoutDriverInput
     reviewsSent?: ReviewUncheckedCreateNestedManyWithoutFromUserInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewsRecvInput = {
@@ -12507,15 +14727,19 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     rider?: UserUpdateOneRequiredWithoutRidesAsRiderNestedInput
     driver?: UserUpdateOneWithoutRidesAsDriverNestedInput
     payments?: PaymentUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateWithoutReviewsInput = {
@@ -12531,13 +14755,17 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     payments?: PaymentUncheckedUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutRideNestedInput
   }
 
   export type UserUpsertWithoutReviewsSentInput = {
@@ -12564,6 +14792,7 @@ export namespace Prisma {
     ridesAsRider?: RideUpdateManyWithoutRiderNestedInput
     ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
     reviewsRecv?: ReviewUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewsSentInput = {
@@ -12579,6 +14808,7 @@ export namespace Prisma {
     ridesAsRider?: RideUncheckedUpdateManyWithoutRiderNestedInput
     ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
     reviewsRecv?: ReviewUncheckedUpdateManyWithoutToUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutReviewsRecvInput = {
@@ -12605,6 +14835,7 @@ export namespace Prisma {
     ridesAsRider?: RideUpdateManyWithoutRiderNestedInput
     ridesAsDriver?: RideUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUpdateManyWithoutFromUserNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewsRecvInput = {
@@ -12620,6 +14851,7 @@ export namespace Prisma {
     ridesAsRider?: RideUncheckedUpdateManyWithoutRiderNestedInput
     ridesAsDriver?: RideUncheckedUpdateManyWithoutDriverNestedInput
     reviewsSent?: ReviewUncheckedUpdateManyWithoutFromUserNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type VehicleCreateManyOwnerInput = {
@@ -12643,12 +14875,15 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
   }
 
   export type RideCreateManyDriverInput = {
@@ -12663,12 +14898,15 @@ export namespace Prisma {
     pickupAddr?: string | null
     dropoffAddr?: string | null
     distance?: number | null
-    price: number
+    price?: number | null
     serviceLevel?: string | null
     startTime?: Date | string | null
     endTime?: Date | string | null
     createdAt?: Date | string
+    routeGeometry?: string | null
     rating?: number | null
+    otp?: string | null
+    otpVerified?: boolean
   }
 
   export type ReviewCreateManyFromUserInput = {
@@ -12686,6 +14924,16 @@ export namespace Prisma {
     fromUserId: string
     rating: number
     comment?: string | null
+    createdAt?: Date | string
+  }
+
+  export type SecurityLogCreateManyUserInput = {
+    id?: string
+    rideId?: string | null
+    lat: number
+    lng: number
+    message: string
+    type?: string
     createdAt?: Date | string
   }
 
@@ -12727,15 +14975,19 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     driver?: UserUpdateOneWithoutRidesAsDriverNestedInput
     reviews?: ReviewUpdateManyWithoutRideNestedInput
     payments?: PaymentUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateWithoutRiderInput = {
@@ -12750,14 +15002,18 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     reviews?: ReviewUncheckedUpdateManyWithoutRideNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateManyWithoutRiderInput = {
@@ -12772,12 +15028,15 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type RideUpdateWithoutDriverInput = {
@@ -12791,15 +15050,19 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     rider?: UserUpdateOneRequiredWithoutRidesAsRiderNestedInput
     reviews?: ReviewUpdateManyWithoutRideNestedInput
     payments?: PaymentUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateWithoutDriverInput = {
@@ -12814,14 +15077,18 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
     reviews?: ReviewUncheckedUpdateManyWithoutRideNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutRideNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutRideNestedInput
   }
 
   export type RideUncheckedUpdateManyWithoutDriverInput = {
@@ -12836,12 +15103,15 @@ export namespace Prisma {
     pickupAddr?: NullableStringFieldUpdateOperationsInput | string | null
     dropoffAddr?: NullableStringFieldUpdateOperationsInput | string | null
     distance?: NullableFloatFieldUpdateOperationsInput | number | null
-    price?: FloatFieldUpdateOperationsInput | number
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     serviceLevel?: NullableStringFieldUpdateOperationsInput | string | null
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    routeGeometry?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: NullableIntFieldUpdateOperationsInput | number | null
+    otp?: NullableStringFieldUpdateOperationsInput | string | null
+    otpVerified?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ReviewUpdateWithoutFromUserInput = {
@@ -12898,6 +15168,36 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SecurityLogUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ride?: RideUpdateOneWithoutSecurityLogsNestedInput
+  }
+
+  export type SecurityLogUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rideId?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityLogUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rideId?: NullableStringFieldUpdateOperationsInput | string | null
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ReviewCreateManyRideInput = {
     id?: string
     fromUserId: string
@@ -12917,6 +15217,16 @@ export namespace Prisma {
     transactionId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type SecurityLogCreateManyRideInput = {
+    id?: string
+    userId: string
+    lat: number
+    lng: number
+    message: string
+    type?: string
+    createdAt?: Date | string
   }
 
   export type ReviewUpdateWithoutRideInput = {
@@ -12980,6 +15290,36 @@ export namespace Prisma {
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityLogUpdateWithoutRideInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSecurityLogsNestedInput
+  }
+
+  export type SecurityLogUncheckedUpdateWithoutRideInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityLogUncheckedUpdateManyWithoutRideInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
+    message?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

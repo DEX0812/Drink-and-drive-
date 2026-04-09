@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
 import { getRouteInfo } from '../utils/osrm';
+import { searchAddress as geocodeSearch } from '../utils/geocoder';
 import { io } from '../index';
 
 interface AuthRequest extends Request {
@@ -33,11 +34,23 @@ function calculateFare(distanceKm: number, durationHrs: number, type: string, se
   return baseFare + distanceKm * ratePerKm + durationHrs * 60 * ratePerMin;
 }
 
+// ─── Traffic Intelligence ───────────────────────────────────────────────────
+function applyTraffic(durationSec: number): number {
+  const hr = new Date().getHours();
+  // Simulated peaks: 8-11am & 6-9pm
+  const isPeak = (hr >= 8 && hr <= 11) || (hr >= 18 && hr <= 21);
+  const factor = isPeak ? 1.3 + Math.random() * 0.2 : 1.1 + Math.random() * 0.1;
+  return durationSec * factor;
+}
+
 // GET /api/rides/estimate — Calculate fare before booking
 export const fareEstimate = async (req: AuthRequest, res: Response) => {
   const { pickupLat, pickupLng, dropoffLat, dropoffLng, type = 'RIDE_HAILING' } = req.query;
 
   try {
+    if (!pickupLat || !pickupLng || !dropoffLat || !dropoffLng) {
+      return res.status(400).json({ message: 'Pickup and Dropoff coordinates are required' });
+    }
     const route = await getRouteInfo(
       Number(pickupLat), Number(pickupLng),
       Number(dropoffLat), Number(dropoffLng)
@@ -48,7 +61,8 @@ export const fareEstimate = async (req: AuthRequest, res: Response) => {
     }
 
     const distanceKm = route.distance / 1000;
-    const durationHrs = route.duration / 3600;
+    const trafficDurationMin = Math.round(applyTraffic(route.duration) / 60);
+    const durationHrs = trafficDurationMin / 60;
 
     const estimates = {
       STANDARD: calculateFare(distanceKm, durationHrs, String(type), 'STANDARD'),
@@ -57,9 +71,10 @@ export const fareEstimate = async (req: AuthRequest, res: Response) => {
 
     res.json({
       distanceKm: Math.round(distanceKm * 10) / 10,
-      durationMin: Math.round(route.duration / 60),
+      durationMin: trafficDurationMin,
       estimates,
       route,
+      geometry: route.geometry,
     });
   } catch (err) {
     console.error('Fare estimate error:', err);
@@ -78,6 +93,9 @@ export const createRide = async (req: AuthRequest, res: Response) => {
   const riderId = req.user.id;
 
   try {
+    if (!pickupLat || !pickupLng || !dropoffLat || !dropoffLng) {
+      return res.status(400).json({ message: 'Missing pickup or dropoff coordinates' });
+    }
     const route = await getRouteInfo(pickupLat, pickupLng, dropoffLat, dropoffLng);
     if (!route) {
       return res.status(400).json({ message: 'Could not calculate route' });
@@ -136,6 +154,8 @@ export const createRide = async (req: AuthRequest, res: Response) => {
         price,
         status: matchedDriverId ? 'ACCEPTED' : 'REQUESTED',
         distance: distanceKm,
+        routeGeometry: route.geometry,
+        otp: Math.floor(1000 + Math.random() * 9000).toString(),
       },
       include: {
         driver: { select: { name: true } },
@@ -159,6 +179,22 @@ export const createRide = async (req: AuthRequest, res: Response) => {
         distanceKm: Math.round(distanceKm * 10) / 10,
       });
     }
+
+    // Notify Admins
+    io.emit('rideCreated', {
+      rideId: ride.id,
+      riderName: req.user.name,
+      pickupLat,
+      pickupLng,
+      dropoffLat,
+      dropoffLng,
+      pickupAddr,
+      dropoffAddr,
+      type,
+      price,
+      distanceKm: Math.round(distanceKm * 10) / 10,
+      routeGeometry: route.geometry,
+    });
 
     res.status(201).json({ ride, route, price });
   } catch (err) {
@@ -198,6 +234,55 @@ export const getRiderRides = async (req: AuthRequest, res: Response) => {
     res.json(rides);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching ride history' });
+  }
+};
+
+// GET /api/rides/current — Get current active ride for user
+export const getCurrentRide = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const ride = await prisma.ride.findFirst({
+      where: {
+        OR: [{ riderId: userId }, { driverId: userId }],
+        status: { in: ['REQUESTED', 'ACCEPTED', 'ONGOING'] }
+      },
+      include: {
+        rider: { select: { name: true } },
+        driver: { 
+          select: { 
+            name: true,
+            driverProfile: {
+              select: {
+                rating: true,
+                isOnline: true,
+              }
+            }
+          } 
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!ride) return res.json(null);
+
+    // If ride has driver, get vehicle too
+    let vehicle = null;
+    if (ride.driverId) {
+      vehicle = await prisma.vehicle.findFirst({
+        where: { ownerId: ride.driverId }
+      });
+    }
+
+    res.json({
+      ...ride,
+      driverName: ride.driver?.name,
+      rating: ride.driver?.driverProfile?.rating || 4.9,
+      carModel: vehicle?.model || 'Toyota Camry',
+      licensePlate: vehicle?.licensePlate || 'K-9281',
+    });
+  } catch (err) {
+    console.error('getCurrentRide error:', err);
+    res.status(500).json({ message: 'Error fetching current ride' });
   }
 };
 
@@ -278,4 +363,48 @@ export const rateRide = async (req: AuthRequest, res: Response) => {
     console.error('Rate ride error:', err);
     res.status(500).json({ message: 'Error submitting rating' });
   }
+};
+
+// POST /api/rides/sos — Trigger emergency alert
+export const triggerSos = async (req: AuthRequest, res: Response) => {
+  const { rideId, lat, lng, message } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const log = await prisma.securityLog.create({
+      data: {
+        rideId,
+        userId,
+        lat,
+        lng,
+        message: message || 'EMERGENCY SOS TRIGGERED',
+      },
+    });
+
+    // Notify Admins via Socket
+    io.emit('emergencyAlert', {
+      logId: log.id,
+      rideId,
+      userId,
+      userName: req.user.name,
+      lat,
+      lng,
+      message: log.message,
+      timestamp: log.createdAt,
+    });
+
+    res.status(201).json({ success: true, log });
+  } catch (err) {
+    console.error('SOS Trigger Error:', err);
+    res.status(500).json({ message: 'Failed to record SOS alert' });
+  }
+};
+
+// GET /api/rides/search-address — Provide location suggestions
+export const searchAddress = async (req: Request, res: Response) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ message: 'Query required' });
+  
+  const results = await geocodeSearch(String(q));
+  res.json(results);
 };

@@ -148,7 +148,10 @@ exports.Prisma.DriverProfileScalarFieldEnum = {
   lastLocationLat: 'lastLocationLat',
   lastLocationLng: 'lastLocationLng',
   isOnline: 'isOnline',
-  rating: 'rating'
+  rating: 'rating',
+  licenseUrl: 'licenseUrl',
+  insuranceUrl: 'insuranceUrl',
+  backgroundCheckUrl: 'backgroundCheckUrl'
 };
 
 exports.Prisma.RideScalarFieldEnum = {
@@ -169,7 +172,21 @@ exports.Prisma.RideScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   createdAt: 'createdAt',
-  rating: 'rating'
+  routeGeometry: 'routeGeometry',
+  rating: 'rating',
+  otp: 'otp',
+  otpVerified: 'otpVerified'
+};
+
+exports.Prisma.SecurityLogScalarFieldEnum = {
+  id: 'id',
+  rideId: 'rideId',
+  userId: 'userId',
+  lat: 'lat',
+  lng: 'lng',
+  message: 'message',
+  type: 'type',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.PaymentScalarFieldEnum = {
@@ -244,6 +261,7 @@ exports.Prisma.ModelName = {
   Vehicle: 'Vehicle',
   DriverProfile: 'DriverProfile',
   Ride: 'Ride',
+  SecurityLog: 'SecurityLog',
   Payment: 'Payment',
   Review: 'Review'
 };

@@ -21,6 +21,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.17.10",
     "@types/socket.io": "^3.0.1",
+    "babel-plugin-module-resolver": "^5.0.3",
     "next": "15.1.0",
     "prisma": "6.2.1",
     "ts-node-dev": "2.0.0",

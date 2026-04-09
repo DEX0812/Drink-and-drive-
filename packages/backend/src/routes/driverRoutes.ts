@@ -7,6 +7,8 @@ import {
   completeRide,
   finishRide,
   getDriverProfile,
+  verifyOtp,
+  updateDocuments,
 } from '../controllers/driverController';
 
 const router = express.Router();
@@ -20,5 +22,7 @@ router.get('/requests', getAvailableRequests);
 router.post('/accept', acceptRide);
 router.post('/complete', completeRide);
 router.post('/finish', finishRide);
+router.post('/verify-otp', verifyOtp);
+router.patch('/documents', updateDocuments);
 
 export default router;
