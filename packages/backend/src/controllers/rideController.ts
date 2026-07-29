@@ -1,0 +1,425 @@
+import { Request, Response } from 'express';
+import prisma from '../utils/prisma';
+import { getRouteInfo } from '../utils/osrm';
+import { searchAddress as geocodeSearch } from '../utils/geocoder';
+import { io } from '../index';
+
+interface AuthRequest extends Request {
+  user?: any;
+}
+
+// ─── Haversine Distance ─────────────────────────────────────────────────────
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ─── Fare Calculation ───────────────────────────────────────────────────────
+function calculateFare(distanceKm: number, durationHrs: number, type: string, serviceLevel: string) {
+  if (type === 'HIRING') {
+    // Driver for personal car: min ₹300 or ₹350/hr
+    const total = Math.max(300, durationHrs * 350);
+    return {
+      total,
+      breakdown: { base: type === 'HIRING' ? 300 : 0, distance: 0, time: total - 300, platform: 0 }
+    };
+  }
+
+  // Ride-hailing
+  const baseFare = serviceLevel === 'PREMIUM' ? 80 : 40;
+  const ratePerKm = serviceLevel === 'PREMIUM' ? 18 : 12;
+  const ratePerMin = serviceLevel === 'PREMIUM' ? 3 : 2;
+  const platformFee = 20;
+
+  const distanceCharge = distanceKm * ratePerKm;
+  const timeCharge = durationHrs * 60 * ratePerMin;
+  const total = baseFare + distanceCharge + timeCharge + platformFee;
+
+  return {
+    total: Math.round(total),
+    breakdown: {
+      base: baseFare,
+      distance: Math.round(distanceCharge),
+      time: Math.round(timeCharge),
+      platform: platformFee
+    }
+  };
+}
+
+// ─── Traffic Intelligence ───────────────────────────────────────────────────
+function applyTraffic(durationSec: number): number {
+  const hr = new Date().getHours();
+  // Simulated peaks: 8-11am & 6-9pm
+  const isPeak = (hr >= 8 && hr <= 11) || (hr >= 18 && hr <= 21);
+  const factor = isPeak ? 1.3 + Math.random() * 0.2 : 1.1 + Math.random() * 0.1;
+  return durationSec * factor;
+}
+
+// GET /api/rides/estimate — Calculate fare before booking
+export const fareEstimate = async (req: AuthRequest, res: Response) => {
+  const { pickupLat, pickupLng, dropoffLat, dropoffLng, type = 'RIDE_HAILING' } = req.query;
+
+  try {
+    if (!pickupLat || !pickupLng || !dropoffLat || !dropoffLng) {
+      return res.status(400).json({ message: 'Pickup and Dropoff coordinates are required' });
+    }
+    const route = await getRouteInfo(
+      Number(pickupLat), Number(pickupLng),
+      Number(dropoffLat), Number(dropoffLng)
+    );
+
+    if (!route) {
+      return res.status(400).json({ message: 'Could not calculate route' });
+    }
+
+    const distanceKm = route.distance / 1000;
+    const trafficDurationMin = Math.round(applyTraffic(route.duration) / 60);
+    const durationHrs = trafficDurationMin / 60;
+
+    const estimates = {
+      STANDARD: calculateFare(distanceKm, durationHrs, String(type), 'STANDARD'),
+      PREMIUM: calculateFare(distanceKm, durationHrs, String(type), 'PREMIUM'),
+    };
+
+    res.json({
+      distanceKm: Math.round(distanceKm * 10) / 10,
+      durationMin: trafficDurationMin,
+      estimates,
+      route,
+      geometry: route.geometry,
+    });
+  } catch (err) {
+    console.error('Fare estimate error:', err);
+    res.status(500).json({ message: 'Error calculating fare' });
+  }
+};
+
+// POST /api/rides/request — Create a new ride
+export const createRide = async (req: AuthRequest, res: Response) => {
+  const {
+    pickupLat, pickupLng, dropoffLat, dropoffLng,
+    pickupAddr, dropoffAddr,
+    type, vehicleId,
+    serviceLevel = 'STANDARD',
+  } = req.body;
+  const riderId = req.user.id;
+
+  try {
+    if (!pickupLat || !pickupLng || !dropoffLat || !dropoffLng) {
+      return res.status(400).json({ message: 'Missing pickup or dropoff coordinates' });
+    }
+    const route = await getRouteInfo(pickupLat, pickupLng, dropoffLat, dropoffLng);
+    if (!route) {
+      return res.status(400).json({ message: 'Could not calculate route' });
+    }
+
+    const distanceKm = route.distance / 1000;
+    const durationHrs = route.duration / 3600;
+    const fareObj = calculateFare(distanceKm, durationHrs, type, serviceLevel);
+    const price = fareObj.total;
+
+    // Transmission check for HIRING
+    let transmissionReq: 'MANUAL' | 'AUTO' = 'AUTO';
+    if (type === 'HIRING') {
+      if (!vehicleId) {
+        return res.status(400).json({ message: 'Vehicle must be specified for driver hiring' });
+      }
+      const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+      if (!vehicle) return res.status(404).json({ message: 'Vehicle not found' });
+      transmissionReq = vehicle.transmission as any;
+    }
+
+    // Find nearest available drivers (sorted by distance)
+    const candidates = await prisma.driverProfile.findMany({
+      where: {
+        isOnline: true,
+        status: 'ACTIVE',
+        ...(type === 'HIRING' && transmissionReq === 'MANUAL' ? { manualCertified: true } : {}),
+        lastLocationLat: { not: null },
+        lastLocationLng: { not: null },
+      },
+      take: 20,
+    });
+
+    const sorted = candidates
+      .filter((d) => d.lastLocationLat && d.lastLocationLng)
+      .map((d) => ({
+        ...d,
+        dist: haversine(d.lastLocationLat!, d.lastLocationLng!, pickupLat, pickupLng),
+      }))
+      .sort((a, b) => a.dist - b.dist);
+
+    // Create ride
+    const ride = await prisma.ride.create({
+      data: {
+        riderId,
+        type,
+        serviceLevel,
+        pickupLat,
+        pickupLng,
+        dropoffLat,
+        dropoffLng,
+        pickupAddr,
+        dropoffAddr,
+        price,
+        status: 'REQUESTED',
+        distance: distanceKm,
+        routeGeometry: route.geometry,
+        otp: Math.floor(1000 + Math.random() * 9000).toString(),
+      },
+    });
+
+    // Notify all qualified drivers in the vicinity
+    candidates.forEach((driver) => {
+      io.to(`driver:${driver.driverId}`).emit('rideRequested', {
+        rideId: ride.id,
+        riderId,
+        riderName: req.user.name,
+        pickupLat,
+        pickupLng,
+        dropoffLat,
+        dropoffLng,
+        pickupAddr,
+        dropoffAddr,
+        type,
+        price,
+        breakdown: fareObj.breakdown,
+        distanceKm: Math.round(distanceKm * 10) / 10,
+      });
+    });
+
+    // Notify Admins
+    io.emit('rideCreated', {
+      rideId: ride.id,
+      riderName: req.user.name,
+      pickupLat,
+      pickupLng,
+      dropoffLat,
+      dropoffLng,
+      pickupAddr,
+      dropoffAddr,
+      type,
+      price,
+      distanceKm: Math.round(distanceKm * 10) / 10,
+      routeGeometry: route.geometry,
+    });
+
+    res.status(201).json({ ride, route, price });
+  } catch (err) {
+    console.error('Create ride error:', err);
+    res.status(500).json({ message: 'Server error creating ride' });
+  }
+};
+
+// GET /api/rides/:id — Get single ride details
+export const getRide = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const ride = await prisma.ride.findUnique({
+      where: { id },
+      include: {
+        rider: { select: { name: true, email: true } },
+        driver: { select: { name: true } },
+        payments: true,
+        reviews: true,
+      },
+    });
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+    res.json(ride);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching ride' });
+  }
+};
+
+// GET /api/rides/history — Get rider's ride history
+export const getRiderRides = async (req: AuthRequest, res: Response) => {
+  try {
+    const rides = await prisma.ride.findMany({
+      where: { riderId: req.user.id },
+      include: { driver: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(rides);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching ride history' });
+  }
+};
+
+// GET /api/rides/current — Get current active ride for user
+export const getCurrentRide = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const ride = await prisma.ride.findFirst({
+      where: {
+        OR: [{ riderId: userId }, { driverId: userId }],
+        status: { in: ['REQUESTED', 'ACCEPTED', 'ONGOING'] }
+      },
+      include: {
+        rider: { select: { name: true } },
+        driver: { 
+          select: { 
+            name: true,
+            driverProfile: {
+              select: {
+                rating: true,
+                isOnline: true,
+              }
+            }
+          } 
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!ride) return res.json(null);
+
+    // If ride has driver, get vehicle too
+    let vehicle = null;
+    if (ride.driverId) {
+      vehicle = await prisma.vehicle.findFirst({
+        where: { ownerId: ride.driverId }
+      });
+    }
+
+    res.json({
+      ...ride,
+      driverName: ride.driver?.name,
+      rating: ride.driver?.driverProfile?.rating || 4.9,
+      carModel: vehicle?.model || 'Toyota Camry',
+      licensePlate: vehicle?.licensePlate || 'K-9281',
+    });
+  } catch (err) {
+    console.error('getCurrentRide error:', err);
+    res.status(500).json({ message: 'Error fetching current ride' });
+  }
+};
+
+// POST /api/rides/cancel — Cancel a ride
+export const cancelRide = async (req: AuthRequest, res: Response) => {
+  const { rideId } = req.body;
+
+  try {
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+    if (ride.riderId !== req.user.id && ride.driverId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to cancel this ride' });
+    }
+    if (['COMPLETED', 'CANCELLED'].includes(ride.status)) {
+      return res.status(400).json({ message: 'Ride cannot be cancelled in current status' });
+    }
+
+    await prisma.ride.update({ where: { id: rideId }, data: { status: 'CANCELLED' } });
+
+    // Notify both parties
+    io.to(`ride:${rideId}`).emit('rideCancelled', { rideId });
+    if (ride.driverId) {
+      io.to(`driver:${ride.driverId}`).emit('rideCancelled', { rideId });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Error cancelling ride' });
+  }
+};
+
+// POST /api/rides/rate — Rate a completed ride
+export const rateRide = async (req: AuthRequest, res: Response) => {
+  const { rideId, rating, comment } = req.body;
+
+  if (rating < 1 || rating > 5) {
+    return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+  }
+
+  try {
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride || ride.riderId !== req.user.id) {
+      return res.status(404).json({ message: 'Ride not found' });
+    }
+    if (ride.status !== 'COMPLETED') {
+      return res.status(400).json({ message: 'Can only rate completed rides' });
+    }
+
+    // Update ride rating
+    await prisma.ride.update({ where: { id: rideId }, data: { rating } });
+
+    // Create review record
+    if (ride.driverId) {
+      await prisma.review.create({
+        data: {
+          rideId,
+          fromUserId: req.user.id,
+          toUserId: ride.driverId,
+          rating,
+          comment,
+        },
+      });
+
+      // Update driver's average rating
+      const aggregate = await prisma.ride.aggregate({
+        where: { driverId: ride.driverId, rating: { not: null } },
+        _avg: { rating: true },
+      });
+
+      await prisma.driverProfile.update({
+        where: { driverId: ride.driverId },
+        data: { rating: aggregate._avg.rating || 0 },
+      });
+    }
+
+    res.json({ message: 'Rating submitted successfully' });
+  } catch (err) {
+    console.error('Rate ride error:', err);
+    res.status(500).json({ message: 'Error submitting rating' });
+  }
+};
+
+// POST /api/rides/sos — Trigger emergency alert
+export const triggerSos = async (req: AuthRequest, res: Response) => {
+  const { rideId, lat, lng, message } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const log = await prisma.securityLog.create({
+      data: {
+        rideId,
+        userId,
+        lat,
+        lng,
+        message: message || 'EMERGENCY SOS TRIGGERED',
+      },
+    });
+
+    // Notify Admins via Socket
+    io.emit('emergencyAlert', {
+      logId: log.id,
+      rideId,
+      userId,
+      userName: req.user.name,
+      lat,
+      lng,
+      message: log.message,
+      timestamp: log.createdAt,
+    });
+
+    res.status(201).json({ success: true, log });
+  } catch (err) {
+    console.error('SOS Trigger Error:', err);
+    res.status(500).json({ message: 'Failed to record SOS alert' });
+  }
+};
+
+// GET /api/rides/search-address — Provide location suggestions
+export const searchAddress = async (req: Request, res: Response) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ message: 'Query required' });
+  
+  const results = await geocodeSearch(String(q));
+  res.json(results);
+};

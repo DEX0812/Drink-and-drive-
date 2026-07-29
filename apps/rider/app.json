@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "DriveSafe Rider",
+    "slug": "drivesafe-rider",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      "expo-status-bar"
+    ]
+  }
+}
